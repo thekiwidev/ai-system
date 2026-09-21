@@ -1,0 +1,24 @@
+{
+  "repo": "JuliusBrussee/caveman",
+  "tag": "v2.7.0",
+  "synced_at": "2026-09-21",
+  "license": "MIT (skill files only)",
+  "files": {
+    "skills/caveman/SKILL.md": {
+      "upstream": "skills/caveman/SKILL.md",
+      "sha256": "0bf09a0a9a017d004a81d4b693e5a2d830e1a28230a5885df773e1ed9c0571cc"
+    },
+    "skills/caveman-commit/SKILL.md": {
+      "upstream": "skills/caveman-commit/SKILL.md",
+      "sha256": "c788a282fc75b981b421dfdad5d84ea7f83f946c126daa39cfc7d3f97845e193"
+    },
+    "skills/caveman-review/SKILL.md": {
+      "upstream": "skills/caveman-review/SKILL.md",
+      "sha256": "599330563f19b5c59c3efddffcd7e8d9098b74c29817ab422ccd3253b103fcb8"
+    },
+    "skills/caveman/UPSTREAM-activate.md": {
+      "upstream": "src/rules/caveman-activate.md",
+      "sha256": "b2c5f95c5f0d751f382f75500e22a1452290654368898d17980e0195d3b54a10"
+    }
+  }
+}

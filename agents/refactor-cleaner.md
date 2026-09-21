@@ -71,7 +71,7 @@ b) Remove one category at a time:
    3. Unused files
    4. Duplicate code
 c) Run tests after each batch
-d) Create git commit for each batch
+d) Report the batch as ready for the owner to commit (never commit yourself)
 ```
 
 ### 4. Duplicate Consolidation
@@ -278,7 +278,7 @@ If something breaks after removal:
 2. **Test Often** - Run tests after each batch
 3. **Document Everything** - Update DELETION_LOG.md
 4. **Be Conservative** - When in doubt, don't remove
-5. **Git Commits** - One commit per logical removal batch
+5. **Commit boundaries** - Recommend one commit per logical removal batch; the owner performs the commits
 6. **Branch Protection** - Always work on feature branch
 7. **Peer Review** - Have deletions reviewed before merging
 8. **Monitor Production** - Watch for errors after deployment

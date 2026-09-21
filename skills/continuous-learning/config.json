@@ -2,7 +2,7 @@
   "min_session_length": 10,
   "extraction_threshold": "medium",
   "auto_approve": false,
-  "learned_skills_path": "~/.claude/skills/learned/",
+  "learned_skills_path": ".agents/skills/learned/",
   "patterns_to_detect": [
     "error_resolution",
     "user_corrections",
@@ -14,5 +14,6 @@
     "simple_typos",
     "one_time_fixes",
     "external_api_issues"
-  ]
+  ],
+  "$comment": "Relative = inside the current project (RULE-SCOPE-001). A path under ~/.thekiwidev is only honoured when the session runs in the global folder."
 }

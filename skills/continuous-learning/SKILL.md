@@ -1,11 +1,12 @@
 ---
 name: continuous-learning
-description: Automatically extract reusable patterns from Claude Code sessions and save them as learned skills for future use.
+description: Automatically extract reusable patterns from agent sessions and save them as learned skills for future use.
+invocable: true
 ---
 
 # Continuous Learning Skill
 
-Automatically evaluates Claude Code sessions on end to extract reusable patterns that can be saved as learned skills.
+Automatically evaluates agent sessions on end to extract reusable patterns that can be saved as learned skills.
 
 ## How It Works
 
@@ -13,7 +14,7 @@ This skill runs as a **Stop hook** at the end of each session:
 
 1. **Session Evaluation**: Checks if session has enough messages (default: 10+)
 2. **Pattern Detection**: Identifies extractable patterns from the session
-3. **Skill Extraction**: Saves useful patterns to `~/.claude/skills/learned/`
+3. **Skill Extraction**: Saves useful patterns to the **project's** `.agents/skills/learned/` (project scope — RULE-SCOPE-001). Patterns that are genuinely cross-project are *proposed* for `~/.thekiwidev/skills/` in the report; they are promoted only from the global folder.
 
 ## Configuration
 
@@ -24,7 +25,7 @@ Edit `config.json` to customize:
   "min_session_length": 10,
   "extraction_threshold": "medium",
   "auto_approve": false,
-  "learned_skills_path": "~/.claude/skills/learned/",
+  "learned_skills_path": ".agents/skills/learned/",
   "patterns_to_detect": [
     "error_resolution",
     "user_corrections",
@@ -61,7 +62,7 @@ Add to your `~/.claude/settings.json`:
       "matcher": "*",
       "hooks": [{
         "type": "command",
-        "command": "~/.claude/skills/continuous-learning/evaluate-session.sh"
+        "command": "node ~/.thekiwidev/scripts/hooks/evaluate-session.js"
       }]
     }]
   }
@@ -76,5 +77,5 @@ Add to your `~/.claude/settings.json`:
 
 ## Related
 
-- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) - Section on continuous learning
+- Origin: the continuous-learning pattern from everything-claude-code (MIT)
 - `/learn` command - Manual pattern extraction mid-session

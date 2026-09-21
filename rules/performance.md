@@ -1,3 +1,8 @@
+---
+name: performance
+description: Model selection by task weight, context-window management, when to use extended thinking and plan mode, and how to troubleshoot builds incrementally.
+---
+
 # Performance Optimization
 
 ## Model Selection Strategy

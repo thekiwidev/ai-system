@@ -1,392 +1,92 @@
-# Everything Claude Code
+# thekiwidev AI system
 
-[![Stars](https://img.shields.io/github/stars/affaan-m/everything-claude-code?style=flat)](https://github.com/affaan-m/everything-claude-code/stargazers)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Shell](https://img.shields.io/badge/-Shell-4EAA25?logo=gnu-bash&logoColor=white)
-![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white)
-![Markdown](https://img.shields.io/badge/-Markdown-000000?logo=markdown&logoColor=white)
+One personal folder — **`~/.thekiwidev`** — that holds my skills, agents, rules, workflows and the project initializer, wired into **every** coding agent I use: Claude Code, OpenAI Codex, Gemini CLI, Google Antigravity, GitHub Copilot (and anything that reads `AGENTS.md`: Jules, Cursor, Windsurf…). Plus the `kiwi` CLI that sets up any project so whichever agent I open it with follows the same operating system.
 
-**The complete collection of Claude Code configs from an Anthropic hackathon winner.**
+```text
+~/.thekiwidev/                      this repo, cloned or symlinked
+├── GLOBAL.md                       my constitution — loaded by every agent, globally
+├── MEMORY.md · NOTES.md            cross-project state and gotchas (project ones live in each repo)
+├── skills/<name>/SKILL.md          procedures, workflows, domain knowledge (the universal format)
+├── agents/<name>.md                specialist sub-agents (planner, architect, code-reviewer, …)
+├── rules/<name>.md                 always-on conventions (git, coding style, testing, security, …)
+├── skills/kiwi-system/             the project initializer: INIT · ADOPT · UPGRADE · AMEND · AUDIT · EXTEND
+│   ├── INITIALIZER.md · runbooks/  the spec, and the per-mode checklists the agent follows
+│   └── templates/docs-ai/          skeleton of every project document
+├── skills/caveman/, rules/caveman.md   terse output style (mirrored upstream skill + our always-on rule)
+├── skills/context-docs/            derived agent-facing copies of memory/notes/changelog
+├── hooks/ · scripts/hooks/         Claude Code automations (session memory, compaction, lint checks)
+├── bin/kiwi.js · lib/              the CLI (Node ≥ 18, zero dependencies)
+├── config.json                     which agents to wire, hooks on/off, opt-in bridges
+└── docs/                           how it all fits, and how to extend it
+```
 
-Production-ready agents, skills, hooks, commands, rules, and MCP configurations evolved over 10+ months of intensive daily use building real products.
+## How it works
 
----
+1. **Skills are the universal currency.** `SKILL.md` (name + description frontmatter) is read natively by all five agents, so every reusable thing — workflows, `create-prd`, the initializer itself — is a skill. Per-agent slash-command wrappers are generated from the frontmatter, never hand-written.
+2. **One physical source, many links.** `kiwi install` symlinks this folder into each agent's own global config (`~/.claude/skills`, `~/.agents/skills`, `~/.gemini/skills`, `~/.gemini/config/skills`, `~/.copilot/skills`, …) and adds a managed block to `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md` and `~/.gemini/GEMINI.md` that points at `GLOBAL.md`. Edit here once; every agent sees it.
+3. **Each project gets a repository-native operating system** in `docs/ai/` (`AGENT-CORE.md`, `MEMORY.md`, `WORKFLOW.md`, `VERIFICATION.md`, decisions, plans, …) with `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` / `.github/copilot-instructions.md` all symlinked to the one canonical file. The project system points back at the global one and wins on conflict.
+4. **The agent is the interface.** In any project, in any agent, say *"set up this project's AI system"* (or *upgrade* / *audit* it). The `kiwi-system` skill fires, the agent runs `kiwi agent` itself, and The brief it gets back contains the tools, the verified project context, the steps, the runbook for the mode and the templates; the agent asks only what the repo cannot answer, writes `docs/ai/`, and finishes with `kiwi stamp`. The CLI never invents project facts; you never have to drive it from the terminal.
 
-## The Guides
+How it all fits and how to change any part of it: [docs/HANDBOOK.md](docs/HANDBOOK.md) — including the [overrides & updates cookbook](docs/HANDBOOK.md#6-overrides-and-updates--the-cookbook) (per-project rule overrides, updating a global rule, what propagates where). Full matrix of who reads what: [docs/AGENT-MATRIX.md](docs/AGENT-MATRIX.md). The project system: [docs/PROJECT-SYSTEM.md](docs/PROJECT-SYSTEM.md). Adding things: [docs/EXTENDING.md](docs/EXTENDING.md).
 
-This repo is the raw code only. The guides explain everything.
+## Install
 
-<table>
-<tr>
-<td width="50%">
-<a href="https://x.com/affaanmustafa/status/2012378465664745795">
-<img src="https://github.com/user-attachments/assets/1a471488-59cc-425b-8345-5245c7efbcef" alt="The Shorthand Guide to Everything Claude Code" />
-</a>
-</td>
-<td width="50%">
-<a href="https://x.com/affaanmustafa/status/2014040193557471352">
-<img src="https://github.com/user-attachments/assets/c9ca43bc-b149-427f-b551-af6840c368f0" alt="The Longform Guide to Everything Claude Code" />
-</a>
-</td>
-</tr>
-<tr>
-<td align="center"><b>Shorthand Guide</b><br/>Setup, foundations, philosophy. <b>Read this first.</b></td>
-<td align="center"><b>Longform Guide</b><br/>Token optimization, memory persistence, evals, parallelization.</td>
-</tr>
-</table>
-
-| Topic | What You'll Learn |
-|-------|-------------------|
-| Token Optimization | Model selection, system prompt slimming, background processes |
-| Memory Persistence | Hooks that save/load context across sessions automatically |
-| Continuous Learning | Auto-extract patterns from sessions into reusable skills |
-| Verification Loops | Checkpoint vs continuous evals, grader types, pass@k metrics |
-| Parallelization | Git worktrees, cascade method, when to scale instances |
-| Subagent Orchestration | The context problem, iterative retrieval pattern |
-
----
-
-## Cross-Platform Support
-
-This plugin now fully supports **Windows, macOS, and Linux**. All hooks and scripts have been rewritten in Node.js for maximum compatibility.
-
-### Package Manager Detection
-
-The plugin automatically detects your preferred package manager (npm, pnpm, yarn, or bun) with the following priority:
-
-1. **Environment variable**: `CLAUDE_PACKAGE_MANAGER`
-2. **Project config**: `.claude/package-manager.json`
-3. **package.json**: `packageManager` field
-4. **Lock file**: Detection from package-lock.json, yarn.lock, pnpm-lock.yaml, or bun.lockb
-5. **Global config**: `~/.claude/package-manager.json`
-6. **Fallback**: First available package manager
-
-To set your preferred package manager:
+**Anyone** — it becomes yours (your folder name, your handle, empty memory), on macOS / Linux / WSL:
 
 ```bash
-# Via environment variable
-export CLAUDE_PACKAGE_MANAGER=pnpm
-
-# Via global config
-node scripts/setup-package-manager.js --global pnpm
-
-# Via project config
-node scripts/setup-package-manager.js --project bun
-
-# Detect current setting
-node scripts/setup-package-manager.js --detect
+curl -fsSL https://raw.githubusercontent.com/thekiwidev/ai-system/main/setup.sh | bash
 ```
 
-Or use the `/setup-pm` command in Claude Code.
+Windows (PowerShell, Developer Mode on for symlinks):
 
----
-
-## What's Inside
-
-This repo is a **Claude Code plugin** - install it directly or copy components manually.
-
-```
-everything-claude-code/
-|-- .claude-plugin/   # Plugin and marketplace manifests
-|   |-- plugin.json         # Plugin metadata and component paths
-|   |-- marketplace.json    # Marketplace catalog for /plugin marketplace add
-|
-|-- agents/           # Specialized subagents for delegation
-|   |-- planner.md           # Feature implementation planning
-|   |-- architect.md         # System design decisions
-|   |-- tdd-guide.md         # Test-driven development
-|   |-- code-reviewer.md     # Quality and security review
-|   |-- security-reviewer.md # Vulnerability analysis
-|   |-- build-error-resolver.md
-|   |-- e2e-runner.md        # Playwright E2E testing
-|   |-- refactor-cleaner.md  # Dead code cleanup
-|   |-- doc-updater.md       # Documentation sync
-|
-|-- skills/           # Workflow definitions and domain knowledge
-|   |-- coding-standards/           # Language best practices
-|   |-- backend-patterns/           # API, database, caching patterns
-|   |-- frontend-patterns/          # React, Next.js patterns
-|   |-- continuous-learning/        # Auto-extract patterns from sessions (Longform Guide)
-|   |-- strategic-compact/          # Manual compaction suggestions (Longform Guide)
-|   |-- tdd-workflow/               # TDD methodology
-|   |-- security-review/            # Security checklist
-|   |-- eval-harness/               # Verification loop evaluation (Longform Guide)
-|   |-- verification-loop/          # Continuous verification (Longform Guide)
-|
-|-- commands/         # Slash commands for quick execution
-|   |-- tdd.md              # /tdd - Test-driven development
-|   |-- plan.md             # /plan - Implementation planning
-|   |-- e2e.md              # /e2e - E2E test generation
-|   |-- code-review.md      # /code-review - Quality review
-|   |-- build-fix.md        # /build-fix - Fix build errors
-|   |-- refactor-clean.md   # /refactor-clean - Dead code removal
-|   |-- learn.md            # /learn - Extract patterns mid-session (Longform Guide)
-|   |-- checkpoint.md       # /checkpoint - Save verification state (Longform Guide)
-|   |-- verify.md           # /verify - Run verification loop (Longform Guide)
-|   |-- setup-pm.md         # /setup-pm - Configure package manager (NEW)
-|
-|-- rules/            # Always-follow guidelines (copy to ~/.claude/rules/)
-|   |-- security.md         # Mandatory security checks
-|   |-- coding-style.md     # Immutability, file organization
-|   |-- testing.md          # TDD, 80% coverage requirement
-|   |-- git-workflow.md     # Commit format, PR process
-|   |-- agents.md           # When to delegate to subagents
-|   |-- performance.md      # Model selection, context management
-|
-|-- hooks/            # Trigger-based automations
-|   |-- hooks.json                # All hooks config (PreToolUse, PostToolUse, Stop, etc.)
-|   |-- memory-persistence/       # Session lifecycle hooks (Longform Guide)
-|   |-- strategic-compact/        # Compaction suggestions (Longform Guide)
-|
-|-- scripts/          # Cross-platform Node.js scripts (NEW)
-|   |-- lib/                     # Shared utilities
-|   |   |-- utils.js             # Cross-platform file/path/system utilities
-|   |   |-- package-manager.js   # Package manager detection and selection
-|   |-- hooks/                   # Hook implementations
-|   |   |-- session-start.js     # Load context on session start
-|   |   |-- session-end.js       # Save state on session end
-|   |   |-- pre-compact.js       # Pre-compaction state saving
-|   |   |-- suggest-compact.js   # Strategic compaction suggestions
-|   |   |-- evaluate-session.js  # Extract patterns from sessions
-|   |-- setup-package-manager.js # Interactive PM setup
-|
-|-- tests/            # Test suite (NEW)
-|   |-- lib/                     # Library tests
-|   |-- hooks/                   # Hook tests
-|   |-- run-all.js               # Run all tests
-|
-|-- contexts/         # Dynamic system prompt injection contexts (Longform Guide)
-|   |-- dev.md              # Development mode context
-|   |-- review.md           # Code review mode context
-|   |-- research.md         # Research/exploration mode context
-|
-|-- examples/         # Example configurations and sessions
-|   |-- CLAUDE.md           # Example project-level config
-|   |-- user-CLAUDE.md      # Example user-level config
-|
-|-- mcp-configs/      # MCP server configurations
-|   |-- mcp-servers.json    # GitHub, Supabase, Vercel, Railway, etc.
-|
-|-- marketplace.json  # Self-hosted marketplace config (for /plugin marketplace add)
+```powershell
+irm https://raw.githubusercontent.com/thekiwidev/ai-system/main/setup.ps1 | iex
 ```
 
----
+Or clone anywhere and run `node bin/setup.js`. Details, per-agent footprint, uninstall: [docs/INSTALL.md](docs/INSTALL.md).
 
-## Installation
+**Me, on a new machine:** `git clone git@github.com:thekiwidev/ai-system.git ~/.thekiwidev && node ~/.thekiwidev/bin/setup.js --mine --yes`.
 
-### Option 1: Install as Plugin (Recommended)
+## Daily use
 
-The easiest way to use this repo - install as a Claude Code plugin:
+| Command | What |
+| --- | --- |
+| `kiwi install` | (re)link the global folder into every agent — run after any change here |
+| `kiwi doctor` | read-only health check of the global install and, in a repo, the project |
+| `kiwi list` | every skill (● = invocable), agent and rule |
+| `kiwi new skill\|workflow\|agent\|rule <name>` | scaffold a component from its template |
+| `kiwi init` | in a project: detect INIT/ADOPT/UPGRADE/AUDIT and print what to tell your agent (optional — saying it in the agent does the same) |
+| `kiwi agent [MODE]` | **for the agent**: in a project, the complete brief for the mode — tools, context, steps, runbook, templates. The agent runs this one command and follows the output |
+| `kiwi context` · `kiwi spec <n>` · `kiwi template [name]` | the pieces of that brief on their own (read-only) |
+| `kiwi stamp` | in a project: the agent's last step — records `kiwi_version` etc. in `docs/ai/SYSTEM.md` |
+| `kiwi link` | in a project: create/repair the entry-point symlinks and adapters (after `docs/ai/AGENT-CORE.md` exists) |
+| `kiwi vendor [a,b]` | copy global skills/rules into the repo for cloud agents / teammates without `~/.thekiwidev` |
+| `kiwi upgrade` | in a project: repair links and vendored copies, then print what to tell your agent (optional — the agent runs `kiwi link` itself) |
+| `kiwi caveman <off\|lite\|full\|ultra\|inherit\|status> [--global]` | the caveman output-style flag: global default or per project (`.caveman.json`) |
+| `kiwi ctx status\|stamp\|init` | in a project: derived agent-facing context docs (`docs/ai/context/`) — current/stale by source hash |
+| `kiwi rebrand --home .<name> [--owner <handle>]` | make the checkout yours (setup does this for you) |
+| `kiwi uninstall` | remove everything `install` put into the agents' config |
+| `kiwi sync` / `kiwi publish` | `git pull` / `git push` this folder — asks first, never commits |
+
+In any agent, in any project: *"set up / upgrade / audit this project's AI system"* (Claude: also `/kiwi-system`); *"use the create-prd skill"*, *"run the feature-workflow"*, `/plan`, `$tdd` for daily work — same files everywhere.
+
+## Fewer tokens, same knowledge
+
+- **Caveman** ([JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman), MIT skill, mirrored) is on by default in every agent: terse answers, code/errors/paths untouched, clear sentences for anything risky. Global flag + per-project `.caveman.json`; never applied to docs, commits or anything you read.
+- **Derived context docs**: agents read a caveman-ultra copy of `MEMORY.md` / `NOTES.md` / `CHANGELOG.md` (`docs/ai/context/`), kept honest by the source's sha256 — stale copies are a failed gate, you keep reading the real files. [HANDBOOK § 2.11–2.12](docs/HANDBOOK.md).
+
+## Principles baked in
+
+YAGNI · never guess project facts · never silently overwrite existing knowledge · **the owner controls Git** (no autonomous branch/commit/push, ever) · verification gates are never weakened · documentation is part of the implementation · the repository, not the chat, is the durable source of truth. See [GLOBAL.md](GLOBAL.md).
+
+## Tests
 
 ```bash
-# Add this repo as a marketplace
-/plugin marketplace add affaan-m/everything-claude-code
-
-# Install the plugin
-/plugin install everything-claude-code@everything-claude-code
-```
-
-Or add directly to your `~/.claude/settings.json`:
-
-```json
-{
-  "extraKnownMarketplaces": {
-    "everything-claude-code": {
-      "source": {
-        "source": "github",
-        "repo": "affaan-m/everything-claude-code"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "everything-claude-code@everything-claude-code": true
-  }
-}
-```
-
-This gives you instant access to all commands, agents, skills, and hooks.
-
----
-
-### Option 2: Manual Installation
-
-If you prefer manual control over what's installed:
-
-```bash
-# Clone the repo
-git clone https://github.com/affaan-m/everything-claude-code.git
-
-# Copy agents to your Claude config
-cp everything-claude-code/agents/*.md ~/.claude/agents/
-
-# Copy rules
-cp everything-claude-code/rules/*.md ~/.claude/rules/
-
-# Copy commands
-cp everything-claude-code/commands/*.md ~/.claude/commands/
-
-# Copy skills
-cp -r everything-claude-code/skills/* ~/.claude/skills/
-```
-
-#### Add hooks to settings.json
-
-Copy the hooks from `hooks/hooks.json` to your `~/.claude/settings.json`.
-
-#### Configure MCPs
-
-Copy desired MCP servers from `mcp-configs/mcp-servers.json` to your `~/.claude.json`.
-
-**Important:** Replace `YOUR_*_HERE` placeholders with your actual API keys.
-
----
-
-## Key Concepts
-
-### Agents
-
-Subagents handle delegated tasks with limited scope. Example:
-
-```markdown
----
-name: code-reviewer
-description: Reviews code for quality, security, and maintainability
-tools: Read, Grep, Glob, Bash
-model: opus
----
-
-You are a senior code reviewer...
-```
-
-### Skills
-
-Skills are workflow definitions invoked by commands or agents:
-
-```markdown
-# TDD Workflow
-
-1. Define interfaces first
-2. Write failing tests (RED)
-3. Implement minimal code (GREEN)
-4. Refactor (IMPROVE)
-5. Verify 80%+ coverage
-```
-
-### Hooks
-
-Hooks fire on tool events. Example - warn about console.log:
-
-```json
-{
-  "matcher": "tool == \"Edit\" && tool_input.file_path matches \"\\\\.(ts|tsx|js|jsx)$\"",
-  "hooks": [{
-    "type": "command",
-    "command": "#!/bin/bash\ngrep -n 'console\\.log' \"$file_path\" && echo '[Hook] Remove console.log' >&2"
-  }]
-}
-```
-
-### Rules
-
-Rules are always-follow guidelines. Keep them modular:
-
-```
-~/.claude/rules/
-  security.md      # No hardcoded secrets
-  coding-style.md  # Immutability, file limits
-  testing.md       # TDD, coverage requirements
-```
-
----
-
-## Running Tests
-
-The plugin includes a comprehensive test suite:
-
-```bash
-# Run all tests
 node tests/run-all.js
-
-# Run individual test files
-node tests/lib/utils.test.js
-node tests/lib/package-manager.test.js
-node tests/hooks/hooks.test.js
 ```
 
----
+## Credits
 
-## Contributing
+The agents, many skills, the hooks and the cross-platform scripts started life in [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) (MIT) and were rewritten for this system: made agent-agnostic, rebranded, and brought under the Git and documentation rules above. The project initializer is my own (v1 → v2 → v3; earlier versions in [docs/archive](docs/archive)).
 
-**Contributions are welcome and encouraged.**
-
-This repo is meant to be a community resource. If you have:
-- Useful agents or skills
-- Clever hooks
-- Better MCP configurations
-- Improved rules
-
-Please contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Ideas for Contributions
-
-- Language-specific skills (Python, Go, Rust patterns)
-- Framework-specific configs (Django, Rails, Laravel)
-- DevOps agents (Kubernetes, Terraform, AWS)
-- Testing strategies (different frameworks)
-- Domain-specific knowledge (ML, data engineering, mobile)
-
----
-
-## Background
-
-I've been using Claude Code since the experimental rollout. Won the Anthropic x Forum Ventures hackathon in Sep 2025 building [zenith.chat](https://zenith.chat) with [@DRodriguezFX](https://x.com/DRodriguezFX) - entirely using Claude Code.
-
-These configs are battle-tested across multiple production applications.
-
----
-
-## Important Notes
-
-### Context Window Management
-
-**Critical:** Don't enable all MCPs at once. Your 200k context window can shrink to 70k with too many tools enabled.
-
-Rule of thumb:
-- Have 20-30 MCPs configured
-- Keep under 10 enabled per project
-- Under 80 tools active
-
-Use `disabledMcpServers` in project config to disable unused ones.
-
-### Customization
-
-These configs work for my workflow. You should:
-1. Start with what resonates
-2. Modify for your stack
-3. Remove what you don't use
-4. Add your own patterns
-
----
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=affaan-m/everything-claude-code&type=Date)](https://star-history.com/#affaan-m/everything-claude-code&Date)
-
----
-
-## Links
-
-- **Shorthand Guide (Start Here):** [The Shorthand Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2012378465664745795)
-- **Longform Guide (Advanced):** [The Longform Guide to Everything Claude Code](https://x.com/affaanmustafa/status/2014040193557471352)
-- **Follow:** [@affaanmustafa](https://x.com/affaanmustafa)
-- **zenith.chat:** [zenith.chat](https://zenith.chat)
-
----
-
-## License
-
-MIT - Use freely, modify as needed, contribute back if you can.
-
----
-
-**Star this repo if it helps. Read both guides. Build something great.**
+MIT — see [LICENSE](LICENSE) for third-party notices.

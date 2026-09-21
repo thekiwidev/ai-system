@@ -1,45 +1,56 @@
+---
+name: git-workflow
+description: The owner controls Git. Inspect freely; never branch, stage, commit, amend, rebase, merge, reset, tag, release or push without explicit per-interaction authorisation. Conventional commit and PR conventions for when the owner does authorise.
+---
+
 # Git Workflow
 
-## Commit Message Format
+## The rule (RULE-GIT-001)
 
+The owner controls Git history. Inspect Git freely (`git status`, `git diff`, `git log`). Modify working-tree files when the task authorises implementation.
+
+**Never**, unless the owner explicitly authorises *that exact class of operation in the current interaction*:
+
+- create or switch branches;
+- stage changes for convenience;
+- commit or amend;
+- rebase, merge, cherry-pick, reset, squash, or otherwise rewrite history;
+- tag, release, push, force-push, or publish.
+
+An authorisation covers only its stated scope — "commit this" does not include "push". Never phrase an unapproved Git operation as though it has already happened.
+
+When work is complete and verified, end with:
+
+```text
+Implementation complete. Verification passed. Documentation synchronized.
+The working tree is ready for your review and commit.
 ```
+
+Then ask whether the owner wants the Git operation performed. Do not perform it.
+
+## When the owner authorises a commit
+
+Conventional commits:
+
+```text
 <type>: <description>
 
-<optional body>
+<optional body — what and why, not how>
 ```
 
-Types: feat, fix, refactor, docs, test, chore, perf, ci
+Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`, `style`.
 
-Note: Attribution disabled globally via ~/.claude/settings.json.
+- Small, focused commits; one logical change each.
+- Run the project's verification gates before committing; never commit with a failing gate.
+- No secrets, no generated noise, no unrelated files.
 
-## Pull Request Workflow
+## When the owner authorises a pull request
 
-When creating PRs:
-1. Analyze full commit history (not just latest commit)
-2. Use `git diff [base-branch]...HEAD` to see all changes
-3. Draft comprehensive PR summary
-4. Include test plan with TODOs
-5. Push with `-u` flag if new branch
+1. Analyse the full commit range (`git diff <base>...HEAD`), not just the latest commit.
+2. Write a summary that explains the change from the user's perspective, the technical cause/solution, and the verification performed.
+3. Include a test plan.
+4. Push only with the explicit authorisation that covers pushing.
 
-## Feature Implementation Workflow
+## Feature implementation order (for reference)
 
-1. **Plan First**
-   - Use **planner** agent to create implementation plan
-   - Identify dependencies and risks
-   - Break down into phases
-
-2. **TDD Approach**
-   - Use **tdd-guide** agent
-   - Write tests first (RED)
-   - Implement to pass tests (GREEN)
-   - Refactor (IMPROVE)
-   - Verify 80%+ coverage
-
-3. **Code Review**
-   - Use **code-reviewer** agent immediately after writing code
-   - Address CRITICAL and HIGH issues
-   - Fix MEDIUM issues when possible
-
-4. **Commit & Push**
-   - Detailed commit messages
-   - Follow conventional commits format
+Plan (**planner**) → tests first (**tdd-guide**) → implement → review (**code-reviewer**, fix CRITICAL/HIGH) → verify gates → reconcile documentation → *report ready for owner commit*.

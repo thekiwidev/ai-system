@@ -1,0 +1,32 @@
+{
+  "$comment": "Personal preferences for the kiwi CLI. Copy to ~/.thekiwidev/config.json (it already is, if ~/.thekiwidev is this repo). CLI flags override these.",
+  "agents": {
+    "claude": true,
+    "codex": true,
+    "gemini": true,
+    "antigravity": true,
+    "copilot": true
+  },
+  "hooks": {
+    "install": false,
+    "tmux": false
+  },
+  "wrappers": {
+    "codex": true,
+    "gemini": true
+  },
+  "bridges": {
+    "cursor": false,
+    "windsurf": false,
+    "copilotPrompts": false
+  },
+  "prdDir": "docs/ai/prd",
+  "caveman": {
+    "mode": "full"
+  },
+  "contextDocs": [
+    "MEMORY",
+    "NOTES",
+    "CHANGELOG"
+  ]
+}

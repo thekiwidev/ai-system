@@ -13,11 +13,12 @@ const testsDir = __dirname;
 const testFiles = [
   'lib/utils.test.js',
   'lib/package-manager.test.js',
-  'hooks/hooks.test.js'
+  'hooks/hooks.test.js',
+  'lib/kiwi.test.js'
 ];
 
 console.log('╔══════════════════════════════════════════════════════════╗');
-console.log('║           Everything Claude Code - Test Suite            ║');
+console.log('║           thekiwidev AI system - Test Suite              ║');
 console.log('╚══════════════════════════════════════════════════════════╝');
 console.log();
 

@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+// `kiwi` — the command on your PATH. All logic lives in kiwi.js.
+require('./kiwi.js');

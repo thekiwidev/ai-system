@@ -1,6 +1,7 @@
 ---
 name: strategic-compact
 description: Suggests manual context compaction at logical intervals to preserve context through task phases rather than arbitrary auto-compaction.
+invocable: true
 ---
 
 # Strategic Compact Skill
@@ -21,7 +22,7 @@ Strategic compaction at logical boundaries:
 
 ## How It Works
 
-The `suggest-compact.sh` script runs on PreToolUse (Edit/Write) and:
+The `scripts/hooks/suggest-compact.js` script runs on PreToolUse (Edit/Write) and:
 
 1. **Tracks tool calls** - Counts tool invocations in session
 2. **Threshold detection** - Suggests at configurable threshold (default: 50 calls)
@@ -38,7 +39,7 @@ Add to your `~/.claude/settings.json`:
       "matcher": "tool == \"Edit\" || tool == \"Write\"",
       "hooks": [{
         "type": "command",
-        "command": "~/.claude/skills/strategic-compact/suggest-compact.sh"
+        "command": "node ~/.thekiwidev/scripts/hooks/suggest-compact.js"
       }]
     }]
   }
@@ -59,5 +60,5 @@ Environment variables:
 
 ## Related
 
-- [The Longform Guide](https://x.com/affaanmustafa/status/2014040193557471352) - Token optimization section
+- Origin: the strategic-compact pattern from everything-claude-code (MIT)
 - Memory persistence hooks - For state that survives compaction

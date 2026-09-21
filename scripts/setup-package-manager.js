@@ -21,8 +21,8 @@ const {
   detectFromLockFile,
   detectFromPackageJson,
   getSelectionPrompt
-} = require('./lib/package-manager');
-const { log } = require('./lib/utils');
+} = require('../lib/package-manager');
+const { log } = require('../lib/utils');
 
 function showHelp() {
   console.log(`
@@ -174,6 +174,10 @@ if (args.includes('--list')) {
 }
 
 const globalIdx = args.indexOf('--global');
+if (globalIdx !== -1 && !args.includes('--yes')) {
+  const scope = require('../lib/scope');
+  if (!scope.inGlobal()) { console.error(scope.refusal('setup-package-manager --global') + ' Use --project here, or add --yes if you (the owner) mean the global preference.'); process.exit(2); }
+}
 if (globalIdx !== -1) {
   const pmName = args[globalIdx + 1];
   if (!pmName) {

@@ -20,7 +20,7 @@ const {
   readFile,
   writeFile,
   log
-} = require('../lib/utils');
+} = require('../../lib/utils');
 
 async function main() {
   // Track tool call count (increment in a temp file)

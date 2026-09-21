@@ -1,5 +1,5 @@
 /**
- * Tests for scripts/lib/package-manager.js
+ * Tests for lib/package-manager.js
  *
  * Run with: node tests/lib/package-manager.test.js
  */
@@ -10,8 +10,8 @@ const fs = require('fs');
 const os = require('os');
 
 // Import the modules
-const pm = require('../../scripts/lib/package-manager');
-const utils = require('../../scripts/lib/utils');
+const pm = require('../../lib/package-manager');
+const utils = require('../../lib/utils');
 
 // Test helper
 function test(name, fn) {

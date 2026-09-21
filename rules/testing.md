@@ -1,6 +1,13 @@
+---
+name: testing
+description: Default testing expectations — TDD (red, green, refactor), unit + integration + E2E for critical flows, 80% coverage target unless the project VERIFICATION.md says otherwise.
+---
+
 # Testing Requirements
 
-## Minimum Test Coverage: 80%
+## Minimum Test Coverage: 80% (default)
+
+A project's `docs/ai/VERIFICATION.md` overrides this number and defines the actual gates.
 
 Test Types (ALL required):
 1. **Unit Tests** - Individual functions, utilities, components

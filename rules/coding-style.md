@@ -1,3 +1,8 @@
+---
+name: coding-style
+description: Immutability by default, many small focused files (200–400 lines, 800 max), comprehensive error handling, validated input, and the pre-completion quality checklist.
+---
+
 # Coding Style
 
 ## Immutability (CRITICAL)

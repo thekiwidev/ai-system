@@ -1,46 +1,39 @@
-# Hooks System
+---
+name: hooks
+description: What the installed Claude Code hooks do (session memory, compaction suggestions, formatting and lint checks) and how to keep task tracking honest with a todo list.
+---
 
-## Hook Types
+# Hooks
 
-- **PreToolUse**: Before tool execution (validation, parameter modification)
-- **PostToolUse**: After tool execution (auto-format, checks)
-- **Stop**: When session ends (final verification)
+Hooks are Claude Code automations declared in `~/.thekiwidev/hooks/hooks.json`. `kiwi install --hooks` merges them into `~/.claude/settings.json` (tagged `[kiwi]`, backup written). Other agents have no hook system; the same expectations apply to them as rules.
 
-## Current Hooks (in ~/.claude/settings.json)
+## Installed hooks
+
+### SessionStart / SessionEnd / PreCompact
+- **session-start** — loads recent session context and detects the package manager.
+- **session-end** — persists session state to `~/.claude/sessions/`; **evaluate-session** extracts reusable patterns (see the `continuous-learning` skill).
+- **pre-compact** — saves state before context compaction.
 
 ### PreToolUse
-- **tmux reminder**: Suggests tmux for long-running commands (npm, pnpm, yarn, cargo, etc.)
-- **git push review**: Opens Zed for review before push
-- **doc blocker**: Blocks creation of unnecessary .md/.txt files
+- **suggest-compact** — suggests `/compact` at logical intervals after many edits (see `strategic-compact`).
+- **tmux reminders** — opt-in (`hooks.tmux` in `config.json`); suggests running long commands in tmux. Off by default because long-running dev servers are owner-run.
+- **git push reminder** — prints a review reminder; it never blocks and never pushes for you.
 
 ### PostToolUse
-- **PR creation**: Logs PR URL and GitHub Actions status
-- **Prettier**: Auto-formats JS/TS files after edit
-- **TypeScript check**: Runs tsc after editing .ts/.tsx files
-- **console.log warning**: Warns about console.log in edited files
+- **PR URL** — logs the PR URL and a review command after `gh pr create` (only ever run with owner authorisation).
+- **prettier** — formats JS/TS files after edits when prettier is available.
+- **tsc** — reports TypeScript errors touching the edited file.
+- **console.log warning** — warns about leftover `console.log`.
 
 ### Stop
-- **console.log audit**: Checks all modified files for console.log before session ends
+- **console.log audit** — checks modified files for `console.log` before the response ends.
 
-## Auto-Accept Permissions
+Removed on purpose: the "block creation of .md files" hook — it fights the `docs/ai/` documentation system.
 
-Use with caution:
-- Enable for trusted, well-defined plans
-- Disable for exploratory work
-- Never use dangerously-skip-permissions flag
-- Configure `allowedTools` in `~/.claude.json` instead
+## Permissions
 
-## TodoWrite Best Practices
+Prefer an explicit allow-list of routine commands over broad auto-accept. Never run with permission checks disabled.
 
-Use TodoWrite tool to:
-- Track progress on multi-step tasks
-- Verify understanding of instructions
-- Enable real-time steering
-- Show granular implementation steps
+## Todo list discipline
 
-Todo list reveals:
-- Out of order steps
-- Missing items
-- Extra unnecessary items
-- Wrong granularity
-- Misinterpreted requirements
+Use the runtime's todo/task tool for multi-step work: it exposes wrong ordering, missing steps, wrong granularity and misread requirements early, and lets the owner steer in real time.

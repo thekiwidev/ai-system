@@ -1,49 +1,48 @@
+---
+name: agents
+description: When to delegate to a specialist sub-agent (planner, architect, tdd-guide, code-reviewer, security-reviewer, …) and how to run independent analyses in parallel.
+---
+
 # Agent Orchestration
 
-## Available Agents
+## Available agents
 
-Located in `~/.claude/agents/`:
+Defined in `~/.thekiwidev/agents/` (installed into your runtime's agents directory where it has one; otherwise adopt the role described in the file).
 
-| Agent | Purpose | When to Use |
+| Agent | Purpose | When to use |
 |-------|---------|-------------|
-| planner | Implementation planning | Complex features, refactoring |
-| architect | System design | Architectural decisions |
+| planner | Implementation planning | Complex features, refactors, anything touching several files |
+| architect | System design | Architectural decisions, boundaries, trade-offs |
 | tdd-guide | Test-driven development | New features, bug fixes |
-| code-reviewer | Code review | After writing code |
-| security-reviewer | Security analysis | Before commits |
-| build-error-resolver | Fix build errors | When build fails |
+| code-reviewer | Code review | Immediately after writing or modifying code |
+| security-reviewer | Security analysis | Auth, input handling, secrets, payments — before the owner commits |
+| build-error-resolver | Fix build errors | When the build or typecheck fails |
 | e2e-runner | E2E testing | Critical user flows |
-| refactor-cleaner | Dead code cleanup | Code maintenance |
-| doc-updater | Documentation | Updating docs |
+| refactor-cleaner | Dead code cleanup | Maintenance passes |
+| doc-updater | Documentation sync | Keeping docs/ai and codemaps current |
 
-## Immediate Agent Usage
+## Use without being asked
 
-No user prompt needed:
-1. Complex feature requests - Use **planner** agent
-2. Code just written/modified - Use **code-reviewer** agent
-3. Bug fix or new feature - Use **tdd-guide** agent
-4. Architectural decision - Use **architect** agent
+1. Complex feature request → **planner**
+2. Code just written or modified → **code-reviewer**
+3. Bug fix or new feature → **tdd-guide**
+4. Architectural decision → **architect**
 
-## Parallel Task Execution
+Delegation never bypasses the owner's approval gates: a plan produced by **planner** still waits for the owner before implementation, and no agent performs Git operations.
 
-ALWAYS use parallel Task execution for independent operations:
+## Parallel execution
+
+Run independent analyses in parallel when the runtime supports it:
 
 ```markdown
-# GOOD: Parallel execution
-Launch 3 agents in parallel:
-1. Agent 1: Security analysis of auth.ts
-2. Agent 2: Performance review of cache system
-3. Agent 3: Type checking of utils.ts
+# GOOD: parallel, independent
+1. security analysis of auth.ts
+2. performance review of the cache layer
+3. type audit of utils.ts
 
-# BAD: Sequential when unnecessary
-First agent 1, then agent 2, then agent 3
+# BAD: sequential when nothing depends on the previous result
 ```
 
-## Multi-Perspective Analysis
+## Multi-perspective analysis
 
-For complex problems, use split role sub-agents:
-- Factual reviewer
-- Senior engineer
-- Security expert
-- Consistency reviewer
-- Redundancy checker
+For hard problems, split roles: factual reviewer · senior engineer · security expert · consistency reviewer · redundancy checker. Merge the findings; do not average them.

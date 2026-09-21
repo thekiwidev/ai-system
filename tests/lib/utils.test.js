@@ -1,5 +1,5 @@
 /**
- * Tests for scripts/lib/utils.js
+ * Tests for lib/utils.js
  *
  * Run with: node tests/lib/utils.test.js
  */
@@ -10,7 +10,7 @@ const fs = require('fs');
 const os = require('os');
 
 // Import the module
-const utils = require('../../scripts/lib/utils');
+const utils = require('../../lib/utils');
 
 // Test helper
 function test(name, fn) {

@@ -19,7 +19,7 @@ const {
   readFile,
   countInFile,
   log
-} = require('../lib/utils');
+} = require('../../lib/utils');
 
 async function main() {
   // Get script directory to find config
@@ -38,8 +38,10 @@ async function main() {
       minSessionLength = config.min_session_length || 10;
 
       if (config.learned_skills_path) {
-        // Handle ~ in path
-        learnedSkillsPath = config.learned_skills_path.replace(/^~/, require('os').homedir());
+        // Handle ~ in path — but never redirect a project session into the global folder (RULE-SCOPE-001)
+        const candidate = config.learned_skills_path.replace(/^~/, require('os').homedir());
+        const scope = require('../../lib/scope');
+        if (scope.inGlobal() || !scope.resolvesToGlobal(path.dirname(candidate))) learnedSkillsPath = candidate;
       }
     } catch {
       // Invalid config, use defaults
@@ -67,7 +69,7 @@ async function main() {
 
   // Signal to Claude that session should be evaluated for extractable patterns
   log(`[ContinuousLearning] Session has ${messageCount} messages - evaluate for extractable patterns`);
-  log(`[ContinuousLearning] Save learned skills to: ${learnedSkillsPath}`);
+  log(`[ContinuousLearning] Save learned skills to: ${learnedSkillsPath} (project scope; propose global promotion in the report, never write to ~/.thekiwidev from here)`);
 
   process.exit(0);
 }

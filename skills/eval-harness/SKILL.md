@@ -1,6 +1,11 @@
+---
+name: eval-harness
+description: A formal evaluation framework for agent sessions implementing eval-driven development (capability evals, regression evals, graders, pass@k metrics) — the reference the eval skill operates on.
+---
+
 # Eval Harness Skill
 
-A formal evaluation framework for Claude Code sessions, implementing eval-driven development (EDD) principles.
+A formal evaluation framework for agent sessions, implementing eval-driven development (EDD) principles.
 
 ## Philosophy
 

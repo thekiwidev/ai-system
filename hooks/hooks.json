@@ -3,6 +3,17 @@
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/scope-guard.js\"",
+            "timeout": 10
+          }
+        ],
+        "description": "Scope guard: block edits that resolve into ~/.thekiwidev from a project session (RULE-SCOPE-001)"
+      },
+      {
         "matcher": "tool == \"Bash\" && tool_input.command matches \"(npm run dev|pnpm( run)? dev|yarn dev|bun run dev)\"",
         "hooks": [
           {
@@ -31,16 +42,6 @@
           }
         ],
         "description": "Reminder before git push to review changes"
-      },
-      {
-        "matcher": "tool == \"Write\" && tool_input.file_path matches \"\\\\.(md|txt)$\" && !(tool_input.file_path matches \"README\\\\.md|CLAUDE\\\\.md|AGENTS\\\\.md|CONTRIBUTING\\\\.md\")",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node -e \"const fs=require('fs');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const p=i.tool_input?.file_path||'';if(/\\.(md|txt)$/.test(p)&&!/(README|CLAUDE|AGENTS|CONTRIBUTING)\\.md$/.test(p)){console.error('[Hook] BLOCKED: Unnecessary documentation file creation');console.error('[Hook] File: '+p);console.error('[Hook] Use README.md for documentation instead');process.exit(1)}console.log(d)})\""
-          }
-        ],
-        "description": "Block creation of random .md files - keeps docs consolidated"
       },
       {
         "matcher": "tool == \"Edit\" || tool == \"Write\"",
@@ -153,5 +154,6 @@
         "description": "Evaluate session for extractable patterns"
       }
     ]
-  }
+  },
+  "$comment": "Claude Code hooks for the thekiwidev AI system. Installed by `kiwi install --hooks` into ~/.claude/settings.json (entries tagged [kiwi]; ${CLAUDE_PLUGIN_ROOT} is replaced with the global root). Entries whose description mentions tmux are skipped unless config.json hooks.tmux is true."
 }

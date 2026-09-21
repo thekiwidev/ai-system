@@ -1,3 +1,8 @@
+---
+name: patterns
+description: Reference implementations for recurring shapes: API response envelope, custom React hooks, repository interface, and evaluating skeleton projects before building from scratch.
+---
+
 # Common Patterns
 
 ## API Response Format

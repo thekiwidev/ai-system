@@ -21,9 +21,8 @@ Thumbs.db
 # Node
 node_modules/
 
-# Personal configs (if any)
-personal/
-private/
 
-# Session templates (not committed)
-examples/sessions/*.tmp
+
+# kiwi
+skills/learned/
+*.bak-*

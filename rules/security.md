@@ -1,8 +1,13 @@
+---
+name: security
+description: Mandatory security checklist (no hardcoded secrets, validated input, injection/XSS/CSRF protection, auth on every route, rate limiting) and the response protocol when an issue is found.
+---
+
 # Security Guidelines
 
 ## Mandatory Security Checks
 
-Before ANY commit:
+Before declaring any work complete (and before the owner commits):
 - [ ] No hardcoded secrets (API keys, passwords, tokens)
 - [ ] All user inputs validated
 - [ ] SQL injection prevention (parameterized queries)

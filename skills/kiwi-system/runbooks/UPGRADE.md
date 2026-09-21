@@ -1,0 +1,24 @@
+# UPGRADE — an existing system, older than the current kiwi version
+
+**Use when** `kiwi context` says UPGRADE: `docs/ai/AGENT-CORE.md` exists and `SYSTEM.md` has no `kiwi_version` (built by the v2 initializer) or an older one. You do both halves: the deterministic one is `kiwi link` (step 1 below); the rest is yours.
+
+**Spec:** INITIALIZER §24, especially §24.3 (delta classes), §24.4 (scaffolding/content firewall), §24.6 (plan artifact), §24.8 (execution order), §24.14 (the fixed v2→v3 delta). **Posture:** additive; nothing in memory, handoff, notes, changelog, ADRs, plans or domains is rewritten; protected customizations are never reverted; nothing is written before approval.
+
+## Steps
+
+1. **Intake and links** — `_shared.md` S1. Run `kiwi link` now (idempotent: repairs entry points and refreshes any vendored copies; report conflicts, never overwrite). Then read the existing system fully: `SYSTEM.md` (BASE = `initializer_version`/`kiwi_version`; `modules.pruned`; `customizations`), `RULES.md`, `AGENT-CORE.md`, `INDEX.md`, `WORKFLOW.md`, `VERIFICATION.md`, `workflows/INDEX.md`. If `SYSTEM.md` is missing, BASE is reconstructed — say so (§24.2).
+2. **State the guarantees** (§24.5) in chat before anything else.
+3. **Compute the delta** — `THEIRS − BASE` applied to `MINE`:
+   - From a v2 system (no `kiwi_version`): start from the fixed table in **§24.14** (V3-1…V3-6: Global system section + startup step 0 in `AGENT-CORE.md`; `kiwi_version`/`global_system`/`prd_dir`/`vendored` in `SYSTEM.md`; `RULE-CORE-004` in `RULES.md`; global workflows referenced in `workflows/INDEX.md`; Global row in `INDEX.md`; entry points via `kiwi link`).
+   - From an older kiwi version: the deltas listed in `~/.thekiwidev/CHANGELOG.md` between that version and this one, classified per §24.3.
+   - If `ENGINEERING.md` has no "Global rules in force" table, add delta `V3-7 MISSING_SECTION` and, on approval, run the rules decision (`_shared.md` S2b) — the only questions an upgrade asks.
+   - If `AGENT-CORE.md` has no § Output style / § Derived context docs and `SYSTEM.md` no `context_docs`, add deltas `V3-8` (caveman section + `.caveman.json` question) and `V3-9` (context docs: `context_docs`, `INDEX` § Derived, `WORKFLOW § 8.4`, `VERIFICATION` checklist line, `RULE-DOC-011`, then S3b). Default: accept; the owner may choose `context_docs: []`.
+   - Then the three-way comparison against the current templates for anything else: `MISSING_SECTION`, `CHANGED_DEFAULT_CLEAN`, `CHANGED_DEFAULT_CUSTOMIZED` (conflict — show both texts verbatim), `PRUNED_AND_STILL_VALID` (no action), `PRUNED_BUT_NOW_APPLICABLE`, `DEPRECATED_IN_SPEC` (keep), `PROJECT_ONLY` (keep + register as customization), `STRUCTURAL_DRIFT`, `CONTENT_STALE` (route to AUDIT, do not fix here).
+   - Consult `modules.pruned` before proposing any absent module; a pruning that says "no PRD process" is replaced by the global `create-prd` reference (§24.14).
+4. **STOP — the dry-run table** (§24.6): one row per delta — ID · class · target · change · risk · approval. Batch low-risk rows; never batch a conflict. Ask: accept all / all except … / only … / defer … / reject …. Wait.
+5. **Execute in the prescribed order** (§24.8): new files → additive sections in existing scaffolding → approved default updates on clean scaffolding → moves/renames → **reference sweep** (INDEX, cross-links, adapters, frontmatter `hosts_rules`/`mirrors_rules`, CI paths) → register new rules in `RULES.md` → register preserved project-only items as customizations → record deferrals/rejections as pruned-with-reason.
+6. **Append `docs/ai/UPGRADES.md`** (create on first upgrade; newest first; §24.10): base, mode, deltas proposed/applied/declined/routed, files touched, Git line.
+7. **`SYSTEM.md` last**: `last_upgraded_at`, `mode_history` entry, updated module lists and customizations; `initializer_version` → `v3 (kiwi <version>)`, `initializer_source` → `~/.thekiwidev/skills/kiwi-system/INITIALIZER.md`. Then `kiwi stamp` (it writes `kiwi_version`, `global_system`, `prd_dir`, `vendored`; pass `--prd-dir` with the project's **existing** PRD location — never move a PRD).
+8. **Finish** — `kiwi doctor --project` must be clean → UPGRADE report (§24.13): version transition · deltas proposed/applied/declined/deferred/routed · scaffolding changed · content touched (should be none) · customizations verified intact · conflicts and who resolved them · modules now absent · outstanding · Git line.
+
+Idempotence check (§24.11): if the owner runs `kiwi upgrade` again immediately, the correct result is "system is current; no deltas".
