@@ -1,6 +1,6 @@
 # AMEND — a new or changed rule, cascaded everywhere
 
-**Use when** the owner states how agents should operate ("from now on…", "the new workflow is…", "stop doing X; do Y", "whenever you update X also update Y"). Product behaviour changes are features, not amendments (§25.2); if a request contains both, the amendment lands first.
+**Use when** the owner states how agents should operate ("from now on…", "the new workflow is…", "stop doing X; do Y", "whenever you update X also update Y"). Product behaviour changes are features, not amendments (§25.2); if a request contains both, the amendment lands first. A repeatable operational procedure ("every time I build, do these steps") is a **workflow**, not a rule: use the `create-workflow` skill instead (RULE-KIND-001).
 
 **Spec:** INITIALIZER §25 and §26. **Principle:** a rule changed in prose but not in the checklist, gate, template or report format that operationalises it has not been changed (§1.8).
 

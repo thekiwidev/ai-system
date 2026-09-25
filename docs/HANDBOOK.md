@@ -34,11 +34,11 @@ Cloud agents (Jules, Copilot coding agent, Codex cloud) only see the repository;
 
 ### 2.2 Skills (and workflows)
 
-**What:** `skills/<name>/SKILL.md` — a procedure or a body of knowledge. A *workflow* is a skill whose body is a multi-step procedure (`invocable: true`). `SKILL.md` is the one format every agent reads natively.
+**What:** `skills/<name>/SKILL.md` — a procedure or a body of knowledge. A *workflow* is a skill with `kind: workflow` in the fixed shape of `skills/_template-workflow/` (§ 2.13). `SKILL.md` is the one format every agent reads natively.
 **Where agents find them:** their own skills directory (symlinked by `kiwi install`): Claude `/name`, Codex `$name` or `/prompts:name`, Gemini `/name`, Antigravity and Copilot by description or when named.
 **Precedence / resolution when named:** project vendored copy → `~/.thekiwidev/skills/<name>` → the agent's own installed copy. Unresolvable → the agent says so and continues; never invents it.
-**Add:** `kiwi new skill <name>` (or `workflow`), edit, `kiwi install`. **Update:** edit the file; `kiwi install` refreshes generated wrappers (`kiwi doctor` shows them as stale until you do). **Remove:** delete the directory, `kiwi install`, then `kiwi doctor` lists any dangling links to remove.
-**Project-specific skill:** put it in `<repo>/.agents/skills/<name>/SKILL.md` (Codex, Copilot, Antigravity read it; Claude reads `.claude/skills/`, so add a symlink there if needed) and list it in `docs/ai/workflows/INDEX.md`. It resolves first.
+**Add:** `kiwi new skill <name>`, edit, `kiwi install` (workflows: § 2.13). **Update:** edit the file; `kiwi install` refreshes generated wrappers (`kiwi doctor` shows them as stale until you do). **Remove:** delete the directory, `kiwi install`, then `kiwi doctor` lists any dangling links to remove.
+**Project-specific skill:** `kiwi new skill <name>` inside the project writes `<repo>/.agents/skills/<name>/SKILL.md` (Codex, Copilot, Antigravity read it) and links `.claude/skills/<name>` to it for Claude; list it in `docs/ai/workflows/INDEX.md` § Skills. It resolves first.
 
 ### 2.3 Agents
 
@@ -77,11 +77,15 @@ Both are **current state only** — rewritten when reality changes, never a diar
 | Global | `~/.thekiwidev/NOTES.md` | `G-###` | tool-level and cross-project gotchas, lessons, deliberate choices about the system |
 | Project | `<repo>/docs/ai/NOTES.md` | `N-###` | open defects, deferred concerns, investigation notes, deliberate non-fixes, legacy patterns and their status |
 
-Read before treating anything as new. Same write discipline as memory.
+Read before treating anything as new. Same write discipline as memory. Entry shape (RULE-DOC-013, `rules/docs-format.md`): `## N-012 — title`, a Date · Status · Related line, then `### N-012 — Context`, `### N-012 — Decision / trigger to revisit`, `### N-012 — Resolution` — the ID in every sub-heading keeps headings unique.
 
 ### 2.7 Decisions, plans, changelog, handoff (project only)
 
-`docs/ai/decisions/` (ADRs — why durable choices were made), `docs/ai/plans/{active,completed}` (what and in what order), `CHANGELOG.md` (what changed), `docs/ai/HANDOFF.md` (the baton). Defined in INITIALIZER §9; the `WORKFLOW.md` decision matrix says which to touch after any change.
+`docs/ai/decisions/` (ADRs — why durable choices were made), `docs/ai/plans/{active,completed}` (what and in what order), `CHANGELOG.md` (what changed), `docs/ai/HANDOFF.md` (the baton). Defined in INITIALIZER §9; the `WORKFLOW.md` decision matrix says which to touch after any change. Changelog entries (RULE-DOC-012, `rules/docs-format.md`) are a verification record, not release publicity: `## v0.17.0 — 2026-09-15 — "title"`, a summary paragraph, then only the applicable `### v0.17.0 — Added | Changed | Fixed | Removed | Security | How it works | Notes | Files changed | Verification` sections; Verification is mandatory and says what was not run. Older entries are never reformatted.
+
+### 2.7a Task scope (RULE-SCOPE-002)
+
+`rules/task-scope.md`: the owner's instruction defines the deliverable. The workflow obligations of that change (root cause, regression test, gates, changelog, memory, handoff, notes, context docs) are in scope; the same bug elsewhere, audits, refactors, team documents, published pages and files with unrelated uncommitted edits are **stop and ask**, reported under "Found, not touched". RULE-SCOPE-001 is *where* an agent may write; RULE-SCOPE-002 is *what* it may do.
 
 ### 2.8 The manifest and the registry (project only)
 
@@ -89,7 +93,7 @@ Read before treating anything as new. Same write discipline as memory.
 
 ### 2.9 Hooks (Claude Code only)
 
-`hooks/hooks.json` + `scripts/hooks/*.js`: session memory, compaction suggestions, prettier / tsc / console.log checks. `kiwi install --hooks` merges them (tagged `[kiwi]`); tmux hooks need `config.json` → `hooks.tmux: true`.
+`hooks/hooks.json` + `scripts/hooks/*.js`: session memory, compaction suggestions, prettier / tsc / console.log checks. `kiwi install --hooks` merges them (tagged `[kiwi]`); tmux hooks need `config.json` → `hooks.tmux: true`. Two sets are installed even without `--hooks`, because they enforce rules: the scope guard (PreToolUse) and `caveman-mode.js` (SessionStart states the effective caveman level for the working directory; UserPromptSubmit repeats it in one line each prompt).
 
 ### 2.10 config.json
 
@@ -98,7 +102,7 @@ Which agents to wire, hooks, wrappers, opt-in Cursor/Windsurf/Copilot-prompt bri
 ### 2.11 Caveman — the output style
 
 **What:** the [caveman](https://github.com/JuliusBrussee/caveman) skill (mirrored, MIT, pinned in `skills/caveman/UPSTREAM.json`; `node scripts/update-caveman.js` re-syncs; `kiwi doctor` warns when a newer tag exists). Agents answer terse — articles/filler/hedging gone, fragments, code/paths/errors untouched, full clear sentences again for security and irreversible actions. Levels `lite` / `full` / `ultra`. `rules/caveman.md` is the always-on digest with our boundaries.
-**Always-on everywhere:** the global mode is baked into every agent's managed block by `kiwi install`; the project mode into `.agents/rules/01-caveman.md` and `AGENT-CORE.md § 11` by `kiwi link`. No upstream plugin or hook needed (their Claude plugin can coexist — it reads the same `.caveman.json` — but adds a duplicate `/caveman`; default: don't).
+**Always-on everywhere:** the global mode is baked into every agent's managed block by `kiwi install`; the project mode into `.agents/rules/01-caveman.md` by `kiwi link`, and into Claude Code sessions by the always-installed `caveman-mode` hook. `AGENT-CORE.md § 11` tells every agent to read `.caveman.json` itself rather than trust a quoted level (a level frozen there by a pre-3.4 init is flagged by `kiwi doctor` and replaced by upgrade delta V3-11). Reports at full/ultra are labelled one-liners (`rules/caveman.md` § Reports). No upstream plugin needed (their Claude plugin can coexist — it reads the same `.caveman.json` — but adds a duplicate `/caveman`; default: don't).
 **The flags — precedence:** `CAVEMAN_DEFAULT_MODE` env → project `.caveman.json` (`{"defaultMode":"off|lite|full|ultra"}`) → global `config.json` (mirrored to `~/.config/caveman/config.json`, upstream's path) → `full`.
 
 ```bash
@@ -120,6 +124,14 @@ kiwi caveman full --global     # global default; re-installs the managed blocks
 **Rules:** the source is never compressed or rewritten; the copy is never edited by hand; when they disagree the source wins and the copy is stale by definition.
 
 Which agents to wire, hooks, wrappers, opt-in Cursor/Windsurf/Copilot-prompt bridges, default `prdDir`. CLI flags override.
+
+### 2.13 Kinds and workflows — one shape per repeatable thing (RULE-KIND-001, RULE-KIND-002)
+
+**What:** `rules/kinds.md`. Everything you can ask an agent to "set up" or "update" — workflow, skill, rule, agent, plan, decision, PRD — has one home per scope, one template, one index. Two agents asked for the same thing produce the same file in the same place.
+**Workflows:** a repeatable operational run (release, production build, OTA update, deploy). Home: `skills/<name>/SKILL.md` (global) or `<repo>/.agents/skills/<name>/SKILL.md` + `.claude/skills/<name>` link (project), frontmatter `kind: workflow`, `version`, `last_reviewed`. Fixed sections: Purpose · Triggers · Parameters · Variants · Pre-flight checks · Steps (each Do / Expect / On failure / Records) · On failure (general) · Verification · Report · Change history. `docs/ai/workflows/INDEX.md` is the project registry (Workflow · Scope · Triggers · Parameters); nothing else lives in that directory.
+**Running one:** before classifying a task, agents match the request against workflow triggers (project first, then global) and run the match as written, filling parameters from your words — *"push to Expo Go using development"*. Invoking a workflow approves every step in it, including Git or publish steps you wrote into it; the workflow's pre-flight checks and per-step failure rules are the safety. Not covered by the workflow → the agent stops and offers to update it.
+**Creating / updating:** say *"set up a workflow for …"* or *"update the X workflow: …"*. The `create-workflow` skill reads the repo first, interviews you only for what files cannot answer (triggers, parameters, variants, value sources such as "last successful build + 1", checks, steps, per-step failure handling, Git, secrets, verification), shows the outline, writes it, dry-walks every variant read-only, registers it. Other kinds go through `kiwi-author` (PRDs through `create-prd`, project rules through AMEND). `kiwi new workflow|skill|agent|rule|plan|decision <name>` scaffolds from the template in the right home and registers where it can.
+**Checked by:** `kiwi doctor` — global workflows' shape; in a project, each workflow's shape, index row and `.claude/skills` link, and any file left in `docs/ai/workflows/` besides the index. Older projects get delta V3-13 on upgrade: every existing workflow is listed, redrafted into the standard shape with your approval per workflow, duplicates merged.
 
 ---
 
@@ -212,5 +224,7 @@ Precedence never changes: project override > project rule > global rule > nothin
 **Where do I write something I learned?** Cross-project and durable → global `MEMORY.md` / `NOTES.md` (agents propose, you approve). About one project → that project's `MEMORY.md` / `docs/ai/NOTES.md` (agents write as the workflow requires). Reusable procedure → a skill.
 
 **Why does an agent read `docs/ai/context/MEMORY.md` instead of `MEMORY.md`?** It is the derived, token-cheap copy (§ 2.12) and `kiwi ctx status` said it was current. If you edit `MEMORY.md`, the copy goes stale and the next agent reads your version and regenerates the copy.
+
+**Why are there no "Co-Authored-By: Claude" lines in my commits?** RULE-GIT-002 (`rules/git-workflow.md`): no AI attribution in commits, tags, PRs or release notes, ever. `kiwi install` also turns Claude Code's attribution off in `~/.claude/settings.json`.
 
 **Can I still paste the initializer into a chat without the CLI?** Yes — `skills/kiwi-system/INITIALIZER.md` plus the runbook for the mode; the agent does the CLI's steps by hand and says so.

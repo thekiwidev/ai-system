@@ -72,10 +72,34 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/caveman-mode.js\" session",
+            "timeout": 10
+          }
+        ],
+        "description": "Caveman mode: state the effective level for this directory (.caveman.json wins over the global default)"
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.js\""
           }
         ],
         "description": "Load previous context and detect package manager on new session"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/caveman-mode.js\" prompt",
+            "timeout": 10
+          }
+        ],
+        "description": "Caveman mode: one-line reminder of the effective level on every prompt"
       }
     ],
     "PostToolUse": [
@@ -155,5 +179,5 @@
       }
     ]
   },
-  "$comment": "Claude Code hooks for the thekiwidev AI system. Installed by `kiwi install --hooks` into ~/.claude/settings.json (entries tagged [kiwi]; ${CLAUDE_PLUGIN_ROOT} is replaced with the global root). Entries whose description mentions tmux are skipped unless config.json hooks.tmux is true."
+  "$comment": "Claude Code hooks for the thekiwidev AI system. Installed by `kiwi install --hooks` into ~/.claude/settings.json (entries tagged [kiwi]; ${CLAUDE_PLUGIN_ROOT} is replaced with the global root). The scope guard and the caveman-mode entries are always installed; the rest only with hooks.install. Entries whose description mentions tmux are skipped unless config.json hooks.tmux is true."
 }

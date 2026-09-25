@@ -30,7 +30,7 @@ From the approved PRD and its acceptance criteria, create the plan in `docs/ai/p
 
 ## 4. Implement
 
-Smallest correct change; reuse before creation; tests ship with the logic (the `tdd-workflow` skill). Stay inside the approved scope — anything discovered that changes scope goes back to the plan and, if product-level, to the owner.
+Smallest correct change; reuse before creation; tests ship with the logic (the `tdd-workflow` skill). Stay inside the approved scope — anything discovered that changes scope goes back to the plan and, if product-level, to the owner. Work outside the approved plan (other features, sweeps, refactors, team documents, published pages) is **stop and ask** (RULE-SCOPE-002).
 
 ## 5. Verify
 
@@ -38,11 +38,11 @@ Run every gate in `docs/ai/VERIFICATION.md` with the project's real commands. Re
 
 ## 6. Documentation impact review
 
-Against the actual diff, reconcile every affected layer per `WORKFLOW.md`'s decision matrix — PRD/spec, plan (mark tasks done only when their acceptance criteria were verified), `MEMORY.md`, `HANDOFF.md`, `NOTES.md`, ADRs (only for durable decisions), architecture/domain docs, `CHANGELOG.md`. For each layer state UPDATED / VERIFIED-NO-CHANGE / NOT APPLICABLE / BLOCKED.
+Against the actual diff, reconcile every affected layer per `WORKFLOW.md`'s decision matrix — PRD/spec, plan (mark tasks done only when their acceptance criteria were verified), `MEMORY.md`, `HANDOFF.md`, `NOTES.md`, ADRs (only for durable decisions), architecture/domain docs, `CHANGELOG.md` (entry shape: `rules/docs-format.md`). For each layer state UPDATED / VERIFIED-NO-CHANGE / NOT APPLICABLE / BLOCKED.
 
 ## 7. Report
 
-Classification · what changed · verification run and results · documentation synchronized (per layer) · remaining work · owner decisions · Git status: *no Git operation performed; ready for your review and commit.* Then ask whether the owner wants a commit made.
+Classification · what changed · verification run and results · documentation synchronized (per layer) · remaining work · owner decisions · Git status: *no Git operation performed; ready for your review and commit.* Then ask whether the owner wants a commit made. With caveman on, use the labelled one-liners in `rules/caveman.md` § Reports and put anything found outside scope under `Found, not touched`.
 
 ## Failure states
 

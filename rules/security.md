@@ -38,4 +38,4 @@ If security issue found:
 2. Use **security-reviewer** agent
 3. Fix CRITICAL issues before continuing
 4. Rotate any exposed secrets
-5. Review entire codebase for similar issues
+5. Review the codebase for similar issues and report them; fix beyond the task's scope only with owner approval (RULE-SCOPE-002)

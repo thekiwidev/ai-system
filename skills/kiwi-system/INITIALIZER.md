@@ -2,7 +2,7 @@
 
 > Reusable setup instruction for creating a portable, repository-native AI operating system that works across Claude Code, Codex, Gemini CLI / Google Antigravity, GitHub Copilot, Jules, Cursor and other coding agents — and that plugs into the owner's **global personal system** at `~/.thekiwidev`.
 
-**Version:** 3.2.0 (`kiwi_version`). Lives at `~/.thekiwidev/skills/kiwi-system/INITIALIZER.md` and is invoked through the `kiwi-system` skill or by pasting this document into any agent. v1 and v2 are archived verbatim at `~/.thekiwidev/docs/archive/`.
+**Version:** 3.5.0 (`kiwi_version`). Lives at `~/.thekiwidev/skills/kiwi-system/INITIALIZER.md` and is invoked through the `kiwi-system` skill or by pasting this document into any agent. v1 and v2 are archived verbatim at `~/.thekiwidev/docs/archive/`.
 
 **What v3 adds to v2** (v2 is otherwise unchanged and remains the specification for everything below):
 
@@ -12,6 +12,8 @@
 - **`SYSTEM.md` records `kiwi_version`, `global_system`, `prd_dir` and `vendored`** (§9.19, §23.2) so `kiwi upgrade` and UPGRADE mode can tell a v2-built system from a v3 one.
 - **Product definition defaults to the global `create-prd` skill** and, for new projects, to `docs/ai/prd/` (§11.1, §17).
 - **§24.14 — the v2 → v3 upgrade delta**, so upgrading an existing system is a fixed, short list.
+- **3.5:** **RULE-KIND-001 / RULE-KIND-002** — one shape per repeatable thing (`rules/kinds.md`): workflows, skills, rules, agents, plans, decisions and PRDs each have one home per scope, one template and one index; project workflows live only in `.agents/skills/<name>/SKILL.md` (`kind: workflow`, standard sections from `skills/_template-workflow/`), `docs/ai/workflows/` holds the registry only; agents match requests against workflow triggers before classifying and run a matching workflow as written; `create-workflow` and `kiwi-author` skills; `kiwi new plan|decision`; `kiwi doctor` checks workflow shape and registration. **RULE-GIT-002** — no AI attribution in commits, tags, PRs or release notes, at all times; `kiwi install` turns off Claude Code's attribution. Deltas V3-13 and V3-14 in §24.14.
+- **3.4:** **RULE-SCOPE-002** task scope — do what was asked, stop and ask before widening (`rules/task-scope.md`); caveman made effective — a Claude Code SessionStart/UserPromptSubmit hook states the project level, `AGENT-CORE.md` tells the agent to read `.caveman.json` instead of freezing a level, reports become labelled one-liners (`rules/caveman.md` § Reports); **RULE-DOC-012 / RULE-DOC-013** — versioned changelog and coded notes with unique sub-headings (`rules/docs-format.md`). Delta V3-10…V3-12 in §24.14.
 - **3.2:** **RULE-SCOPE-001** write scope (§0.0.7) with CLI and hook enforcement; **caveman** output style as a global skill + rule with a global flag and per-project `.caveman.json` (§0.0.6); **derived context docs** — agent-facing caveman-ultra copies of memory/notes/changelog with hash-verified freshness (§0.0.5, RULE-DOC-011).
 - **3.1:** per-mode **runbooks** (`runbooks/*.md`) the agent follows step by step; `kiwi context` (verified project brief) and `kiwi stamp` (records the finished upgrade) as agent tools; **global memory and notes** (§0.0.4) alongside project memory and notes.
 
@@ -637,8 +639,7 @@ When the owner requests the complete AI system, create this structure, pruning o
         ├── AMENDMENTS.md      # append-only: owner rule changes and their cascade
         │
         ├── workflows/
-        │   ├── INDEX.md
-        │   └── PRD-WORKFLOW.md   # only when a PRD workflow is supplied/needed
+        │   └── INDEX.md          # registry only: workflows live in .agents/skills/<name>/ (RULE-KIND-001)
         │
         ├── decisions/
         │   ├── INDEX.md
@@ -1161,9 +1162,9 @@ Historical, human-readable record of completed work.
 
 Keep it separate from current state.
 
-Use the project's existing changelog style when one already exists.
+New entries follow RULE-DOC-012 (`~/.thekiwidev/rules/docs-format.md`): `## vX.Y.Z — date — "title"`, a summary paragraph, then only the applicable sub-sections in order — Added, Changed, Fixed, Removed, Security, How it works, Notes, Files changed, Verification (mandatory) — each headed `### vX.Y.Z — <section>` so no heading repeats.
 
-When none exists, establish a consistent style and document the rule in the AI system.
+When the project already has a changelog in another style, existing entries stay as written; the owner decides whether new entries adopt RULE-DOC-012 or keep the house style (record a keep as an override in `ENGINEERING.md § 0`).
 
 Every entry should explain the change from the user's perspective, relevant technical cause/solution, and verification when appropriate.
 
@@ -1336,7 +1337,7 @@ First determine which PRD-creation workflow applies, in this order:
 
 ```text
 1. A project-specific PRD workflow referenced from docs/ai/workflows/INDEX.md
-   (e.g. docs/ai/workflows/PRD-WORKFLOW.md)
+   (a project skill in .agents/skills/<name>/, RULE-KIND-001)
 2. The global `create-prd` skill (~/.thekiwidev/skills/create-prd/SKILL.md, or the
    project's vendored copy) — the default for every project in this system
 ```
@@ -1708,13 +1709,13 @@ In v3 the default PRD workflow is the global **`create-prd`** skill; `docs/ai/wo
 
 The initializer must also detect whether the owner has supplied or created a **project-specific** PRD workflow document that overrides the global default.
 
-When present, index it under:
+When present, it lives as a project skill (RULE-KIND-001):
 
 ```text
-docs/ai/workflows/PRD-WORKFLOW.md
+.agents/skills/<name>/SKILL.md      registered in docs/ai/workflows/INDEX.md
 ```
 
-or the project's explicitly chosen equivalent.
+A v2 system may still hold it at `docs/ai/workflows/PRD-WORKFLOW.md`; UPGRADE delta V3-13 proposes the move, and until the owner approves it the existing file keeps working.
 
 The generated general workflow must **delegate PRD creation to that workflow** rather than duplicating its detailed question set.
 
@@ -2094,7 +2095,7 @@ Tier 2 — Depth (only where justified)
   docs/ai/domains/*          per real domain, highest-risk first
   docs/ai/decisions/*        retro-ADRs for already-fixed decisions
   docs/ai/plans/*            when real planned work exists
-  docs/ai/workflows/*        when a real reusable workflow exists
+  .agents/skills/<name>/     when a real reusable workflow exists (create-workflow skill; registered in docs/ai/workflows/INDEX.md)
 ```
 
 Default to Tier 0 + Tier 1 unless the owner asks otherwise. Propose Tier 2 items individually with a justification each.
@@ -2682,6 +2683,10 @@ A system built by the v2 initializer (no `kiwi_version` in `SYSTEM.md`) needs ex
 `prd_dir` for an upgraded project is **the existing PRD location** — never move a PRD during an upgrade. If the project recorded `workflows/PRD-WORKFLOW.md` as pruned because "no PRD process exists", V3-4 replaces that pruning entry with the global `create-prd` reference and notes the change in `UPGRADES.md`.
 
 The scaffolding/content firewall (§24.4) applies unchanged: none of V3-1…6 touches memory, handoff, notes, changelog, ADRs, plans or domain documents.
+
+**3.4 → 3.5:** `V3-13` kinds and workflows — register `RULE-KIND-001` / `RULE-KIND-002` in `RULES.md`; add the two paragraphs "Workflows run as written" and "One shape per kind" to `AGENT-CORE.md § 8`; add "First, match a workflow" to `WORKFLOW.md § 2`; replace the `workflows/INDEX.md` header and table with the registry shape (`Workflow · Scope · Triggers · Parameters`, lifecycle skills, project skills), carrying every existing row across; update the `INDEX.md` workflows row (MISSING_SECTION / CHANGED_DEFAULT_CLEAN, low, batched). Then one row **per existing workflow** outside its home (`docs/ai/workflows/*.md` other than INDEX, loose `docs/*WORKFLOW*.md` guides, free-form procedure skills in `.agents/skills/`) — STRUCTURAL_DRIFT, medium, never batched: the `create-workflow` skill drafts the conforming `.agents/skills/<name>/SKILL.md` (plus `.claude/skills/<name>` link) from the existing text and asks only what the text leaves open; the old file is removed or reduced to a pointer only on the owner's yes. Two files for the same job are merged into one on the owner's choice of which wins. `kiwi doctor` lists what remains. `V3-14` no AI attribution — register `RULE-GIT-002` in `RULES.md` and add the "No AI attribution" paragraph to `AGENT-CORE.md § 5`; if the project's own docs or workflows tell agents to add an AI trailer, list it and remove it on the owner's yes (MISSING_SECTION, low, batched; `kiwi doctor` flags a missing paragraph).
+
+**3.3 → 3.4:** `V3-10` task scope — register `RULE-SCOPE-002` in `RULES.md`, add the "Do what was asked" paragraph to `AGENT-CORE.md § 4`, the task-scope line to `WORKFLOW.md § 6`, "Found, not touched" to the `WORKFLOW.md § 9` report and the out-of-scope row to § 8.2 (MISSING_SECTION, low, batched). `V3-11` caveman — replace the frozen level in `AGENT-CORE.md § 11` ("currently …") with the read-`.caveman.json` instruction, add the `.caveman.json` read to startup step 0, add the caveman report line to `WORKFLOW.md § 9` (CHANGED_DEFAULT_CLEAN, low, batched; `kiwi doctor` flags a frozen level that disagrees with the effective one). `V3-12` doc formats — register `RULE-DOC-012` / `RULE-DOC-013` in `RULES.md`, update the `NOTES.md` header and entry-shape comment, the `INDEX.md` CHANGELOG/NOTES rows, the `WORKFLOW.md § 8.2` bug-fix row and format line, `AGENT-CORE.md § 7` (MISSING_SECTION, low, batched). If the project's changelog uses another style, ask once: adopt RULE-DOC-012 for new entries, or keep the house style as an `ENGINEERING.md § 0` override. None of V3-10…12 rewrites an existing changelog or notes entry (§24.4).
 
 **3.1 → 3.2:** `V3-8` caveman — `AGENT-CORE.md § 11 Output style` + `.caveman.json` question (MISSING_SECTION, low, batched); `V3-9` derived context docs — `SYSTEM.md → context_docs`, `INDEX.md § Derived`, `WORKFLOW.md § 8.4`, `VERIFICATION.md` checklist line, `AGENT-CORE.md § 12`, `RULE-DOC-011`, then the first derivation (MISSING_MODULE, low; the owner may decline with `context_docs: []`). `V3-7` (from 3.1) — `ENGINEERING.md § 0 Global rules in force` + the rules decision.
 

@@ -469,6 +469,41 @@ function runTests() {
     assert.strictEqual(run(proj, path.join(proj, 'docs', 'ai', 'NOTES.md')), 0, 'project file → allowed');
     assert.strictEqual(run(REPO, path.join(REPO, 'rules', 'testing.md')), 0, 'global session → allowed');
   });
+  t('caveman-mode hook states the project level, a one-line reminder per prompt, and nothing when off', () => {
+    const hook = path.join(REPO, 'scripts', 'hooks', 'caveman-mode.js');
+    const d = path.join(fixtures, 'cave-hook'); fs.mkdirSync(d, { recursive: true });
+    const env = { ...process.env, THEKIWIDEV_AI_HOME: REPO }; delete env.CAVEMAN_DEFAULT_MODE;
+    const run = kind => execFileSync('node', [hook, kind], { input: JSON.stringify({ cwd: d }), encoding: 'utf8', env });
+    fs.writeFileSync(path.join(d, '.caveman.json'), '{"defaultMode":"ultra"}');
+    const session = run('session');
+    assert.ok(session.includes('Caveman mode: **ultra** for this project') && session.includes('.caveman.json'), session);
+    const prompt = run('prompt');
+    assert.strictEqual(prompt.trim().split('\n').length, 1);
+    assert.ok(prompt.startsWith('Caveman: ultra (.caveman.json)'));
+    fs.writeFileSync(path.join(d, '.caveman.json'), '{"defaultMode":"off"}');
+    assert.strictEqual(run('session'), '');
+    assert.strictEqual(execFileSync('node', [hook, 'session'], { input: 'not json', encoding: 'utf8', env, cwd: d }), '', 'bad input never blocks');
+  });
+  t('frozen caveman level in AGENT-CORE is detected; the 3.4 template freezes none', () => {
+    const cave = require('../../lib/caveman');
+    assert.strictEqual(cave.statedInCore('this repository\'s `.caveman.json` (`{"defaultMode": "off|lite|full|ultra"}`, currently `full`) → the global'), 'full');
+    assert.strictEqual(cave.statedInCore('`.caveman.json`, currently **ultra**'), 'ultra');
+    const tpl = fs.readFileSync(path.join(REPO, 'skills', 'kiwi-system', 'templates', 'docs-ai', 'AGENT-CORE.md'), 'utf8');
+    assert.strictEqual(cave.statedInCore(tpl), null);
+    assert.ok(!tpl.includes('{{CAVEMAN_SETTING}}') && tpl.includes('Read `.caveman.json`'));
+  });
+  t('task scope and doc-format rules exist, are registered, and the changelog has no duplicate headings', () => {
+    for (const r of ['task-scope', 'docs-format']) {
+      const { data } = fm.parse(fs.readFileSync(path.join(REPO, 'rules', r + '.md'), 'utf8'));
+      assert.ok(data.name === r && data.description && data.applyTo, r);
+    }
+    const reg = fs.readFileSync(path.join(REPO, 'skills', 'kiwi-system', 'templates', 'docs-ai', 'RULES.md'), 'utf8');
+    for (const id of ['RULE-SCOPE-002', 'RULE-DOC-012', 'RULE-DOC-013']) assert.ok(reg.includes('### ' + id), id);
+    assert.ok(fs.readFileSync(path.join(REPO, 'GLOBAL.md'), 'utf8').includes('RULE-SCOPE-002'));
+    const headings = fs.readFileSync(path.join(REPO, 'CHANGELOG.md'), 'utf8').split('\n').filter(l => /^#{2,6} /.test(l));
+    const dupes = headings.filter((h, i) => headings.indexOf(h) !== i);
+    assert.deepStrictEqual(dupes, []);
+  });
   t('generated headers and vendored markers never instruct editing the global folder', () => {
     const { mdHeader } = require('../../lib/adapters/common');
     assert.ok(!/edit (the source|the global)/i.test(mdHeader()) && mdHeader().includes('DO NOT EDIT') && mdHeader().includes('RULE-SCOPE-001'));
@@ -477,13 +512,99 @@ function runTests() {
     assert.ok(fs.readFileSync(path.join(REPO, 'GLOBAL.md'), 'utf8').includes('RULE-SCOPE-001'));
     assert.ok(fs.readFileSync(path.join(REPO, 'skills', 'kiwi-system', 'runbooks', 'AMEND.md'), 'utf8').includes('which you do not edit from here'));
   });
-  t('kiwi install always carries the scope guard hook, other hooks only with hooks.install', () => {
+  t('kiwi install always carries the scope guard and caveman-mode hooks, other hooks only with hooks.install', () => {
     const only = adapters.claude.global({ ...ctx, config: { ...ctx.config, hooks: { install: false, tmux: false } } }).find(o => o.kind === 'json').merge({});
-    assert.deepStrictEqual(Object.keys(only.hooks), ['PreToolUse']);
+    assert.deepStrictEqual(Object.keys(only.hooks).sort(), ['PreToolUse', 'SessionStart', 'UserPromptSubmit']);
     assert.strictEqual(only.hooks.PreToolUse.length, 1);
     assert.ok(only.hooks.PreToolUse[0].description.includes('Scope guard'));
+    assert.strictEqual(only.hooks.SessionStart.length, 1);
+    assert.ok(only.hooks.SessionStart[0].hooks[0].command.includes('caveman-mode.js') && only.hooks.SessionStart[0].hooks[0].command.endsWith(' session'));
+    assert.ok(only.hooks.UserPromptSubmit[0].hooks[0].command.endsWith(' prompt'));
+    assert.ok(!only.hooks.SessionStart[0].hooks[0].command.includes('${CLAUDE_PLUGIN_ROOT}'));
     const all = adapters.claude.global({ ...ctx, config: { ...ctx.config, hooks: { install: true, tmux: false } } }).find(o => o.kind === 'json').merge({});
     assert.ok(all.hooks.SessionStart && all.hooks.PreToolUse.length > 1);
+  });
+
+  console.log('\nkinds & workflows (RULE-KIND-001, RULE-KIND-002):');
+  const kinds = require('../../lib/kinds');
+  const kenv = { ...process.env, KIWI_TEST_HOME: tmpHome, THEKIWIDEV_AI_HOME: REPO, NO_COLOR: '1' };
+  const kbin = path.join(REPO, 'bin', 'kiwi.js');
+  const kproj = path.join(fixtures, 'kinds-proj');
+  const tplDir = path.join(REPO, 'skills', 'kiwi-system', 'templates', 'docs-ai');
+  for (const rel of ['workflows/INDEX.md', 'plans/INDEX.md', 'decisions/INDEX.md']) {
+    fs.mkdirSync(path.dirname(path.join(kproj, 'docs', 'ai', rel)), { recursive: true });
+    fs.copyFileSync(path.join(tplDir, rel), path.join(kproj, 'docs', 'ai', rel));
+  }
+  const knew = (...a) => execFileSync('node', [kbin, 'new', ...a], { env: kenv, encoding: 'utf8', cwd: kproj, stdio: 'pipe' });
+  t('the workflow template conforms; a free-form procedure skill does not', () => {
+    const tpl = fs.readFileSync(path.join(REPO, 'skills', '_template-workflow', 'SKILL.md'), 'utf8');
+    assert.deepStrictEqual(kinds.workflowProblems(tpl), []);
+    const loose = '---\nname: x\ndescription: y\ninvocable: true\nkind: workflow\n---\n\n# x\n\n## Steps\n\nrun things\n';
+    const problems = kinds.workflowProblems(loose);
+    assert.ok(problems.some(p => p.includes('version')) && problems.some(p => p.includes('Pre-flight checks')) && problems.some(p => p.includes('numbered steps')));
+  });
+  t('kiwi new workflow in a project: standard shape, .claude/skills link, index row', () => {
+    knew('workflow', 'expo-release', '--description', 'Production build, OTA update, Expo Go push');
+    const file = path.join(kproj, '.agents', 'skills', 'expo-release', 'SKILL.md');
+    const text = fs.readFileSync(file, 'utf8');
+    const { data } = fm.parse(text);
+    assert.ok(data.kind === 'workflow' && data.version === 1 && data.invocable === true && /^\d{4}-\d{2}-\d{2}$/.test(data.last_reviewed));
+    assert.ok(!text.includes('{{'), 'placeholders filled');
+    assert.deepStrictEqual(kinds.workflowProblems(text), []);
+    assert.strictEqual(fs.realpathSync(path.join(kproj, '.claude', 'skills', 'expo-release', 'SKILL.md')), fs.realpathSync(file));
+    const index = fs.readFileSync(path.join(kproj, 'docs', 'ai', 'workflows', 'INDEX.md'), 'utf8');
+    const rows = index.split('## Workflows')[1].split('##')[0];
+    assert.ok(rows.includes('| `expo-release` | project |'));
+    assert.strictEqual(kinds.projectWorkflows(kproj).map(w => w.name).join(), 'expo-release');
+  });
+  t('kiwi new plan and decision scaffold into their homes and register; prd and global plans are refused', () => {
+    knew('plan', 'checkout-v2');
+    assert.ok(fs.readFileSync(path.join(kproj, 'docs', 'ai', 'plans', 'active', 'checkout-v2.md'), 'utf8').includes('# checkout-v2'));
+    assert.ok(fs.readFileSync(path.join(kproj, 'docs', 'ai', 'plans', 'INDEX.md'), 'utf8').split('## Completed')[0].includes('[checkout-v2](active/checkout-v2.md)'));
+    knew('decision', 'use-eas'); knew('decision', 'drop-redux');
+    const dec = fs.readdirSync(path.join(kproj, 'docs', 'ai', 'decisions')).filter(f => f.startsWith('ADR-')).sort();
+    assert.deepStrictEqual(dec, ['ADR-001-use-eas.md', 'ADR-002-drop-redux.md']);
+    assert.ok(fs.readFileSync(path.join(kproj, 'docs', 'ai', 'decisions', 'INDEX.md'), 'utf8').includes('| [ADR-002](ADR-002-drop-redux.md) |'));
+    let code = 0; try { knew('prd', 'x'); } catch (e) { code = e.status; } assert.strictEqual(code, 1);
+    code = 0; try { execFileSync('node', [kbin, 'new', 'plan', 'x'], { env: kenv, encoding: 'utf8', cwd: REPO, stdio: 'pipe' }); } catch (e) { code = e.status; }
+    assert.strictEqual(code, 1); assert.ok(!fs.existsSync(path.join(REPO, 'docs', 'ai')));
+  });
+  t('doctor flags malformed, unregistered and unlinked workflows and files left in docs/ai/workflows/', () => {
+    const { checkProjectWorkflows } = require('../../lib/commands/doctor');
+    const quiet = fn => { const log = console.log; console.log = () => {}; try { return fn(); } finally { console.log = log; } };
+    assert.strictEqual(quiet(() => checkProjectWorkflows(kproj, false)), 0, 'scaffolded workflow is clean');
+    const bad = path.join(kproj, '.agents', 'skills', 'loose-deploy'); fs.mkdirSync(bad, { recursive: true });
+    fs.writeFileSync(path.join(bad, 'SKILL.md'), '---\nname: loose-deploy\ndescription: d\ninvocable: true\nkind: workflow\n---\n\n# d\n');
+    fs.writeFileSync(path.join(kproj, 'docs', 'ai', 'workflows', 'PRD-WORKFLOW.md'), '# old');
+    // loose-deploy: shape (version, sections, steps) + unregistered + unlinked; stray PRD-WORKFLOW.md
+    assert.strictEqual(quiet(() => checkProjectWorkflows(kproj, false)), 6);
+  });
+  t('kinds rule, skills, templates and initializer carry RULE-KIND-001/002 and delta V3-13', () => {
+    const { data } = fm.parse(fs.readFileSync(path.join(REPO, 'rules', 'kinds.md'), 'utf8'));
+    assert.ok(data.name === 'kinds' && data.description && data.applyTo);
+    for (const s of ['create-workflow', 'kiwi-author']) assert.ok(registry.skills(REPO).some(k => k.name === s && k.invocable), s);
+    assert.ok(!registry.skills(REPO).some(k => k.name.startsWith('_')), 'templates are never linked as skills');
+    const reg = fs.readFileSync(path.join(tplDir, 'RULES.md'), 'utf8');
+    for (const id of ['RULE-KIND-001', 'RULE-KIND-002']) assert.ok(reg.includes('### ' + id), id);
+    assert.ok(fs.readFileSync(path.join(tplDir, 'AGENT-CORE.md'), 'utf8').includes('Workflows run as written (RULE-KIND-002)'));
+    assert.ok(fs.readFileSync(path.join(tplDir, 'WORKFLOW.md'), 'utf8').includes('First, match a workflow'));
+    assert.ok(fs.readFileSync(path.join(REPO, 'GLOBAL.md'), 'utf8').includes('RULE-KIND-002'));
+    const init = fs.readFileSync(path.join(REPO, 'skills', 'kiwi-system', 'INITIALIZER.md'), 'utf8');
+    assert.ok(init.includes('`V3-13`') && init.includes(`**Version:** ${paths.version()}`));
+    assert.ok(fs.readFileSync(path.join(REPO, 'skills', 'kiwi-system', 'runbooks', 'UPGRADE.md'), 'utf8').includes('V3-13'));
+  });
+
+  t('RULE-GIT-002: no AI attribution is a rule everywhere and kiwi install turns off Claude Code attribution', () => {
+    const merged = adapters.claude.global({ ...ctx, config: { ...ctx.config, hooks: { install: false, tmux: false } } }).find(o => o.kind === 'json')
+      .merge({ attribution: { commit: 'x', other: 1 }, includeCoAuthoredBy: true, model: 'keep' });
+    assert.deepStrictEqual(merged.attribution, { commit: '', pr: '', other: 1 });
+    assert.strictEqual(merged.includeCoAuthoredBy, false);
+    assert.strictEqual(merged.model, 'keep');
+    assert.ok(fs.readFileSync(path.join(REPO, 'rules', 'git-workflow.md'), 'utf8').includes('## No AI attribution (RULE-GIT-002)'));
+    assert.ok(fs.readFileSync(path.join(REPO, 'GLOBAL.md'), 'utf8').includes('RULE-GIT-002'));
+    assert.ok(fs.readFileSync(path.join(tplDir, 'RULES.md'), 'utf8').includes('### RULE-GIT-002'));
+    assert.ok(fs.readFileSync(path.join(tplDir, 'AGENT-CORE.md'), 'utf8').includes('**No AI attribution (RULE-GIT-002).**'));
+    assert.ok(fs.readFileSync(path.join(REPO, 'skills', 'kiwi-system', 'INITIALIZER.md'), 'utf8').includes('`V3-14`'));
   });
 
   console.log('\nrebrand & uninstall:');

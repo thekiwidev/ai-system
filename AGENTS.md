@@ -11,7 +11,7 @@ You are working **inside `~/.thekiwidev`**, the owner's global AI system — not
 | Owner says | Do |
 | --- | --- |
 | "Update the performance rule to …" | Edit `rules/performance.md` (keep the frontmatter; keep it short, imperative, verifiable). Tell the owner which projects override it (grep their `ENGINEERING.md § 0` if they are on this machine) — those keep their override until amended there; adopted-as-pointer projects pick the change up automatically. |
-| "Add a rule / skill / workflow / agent" | `kiwi new rule|skill|workflow|agent <name>` (or copy the `_template`), fill it, then `kiwi install` so every agent links it; `kiwi doctor` must be clean. |
+| "Add a rule / skill / workflow / agent" | Follow `rules/kinds.md`: workflows through the `create-workflow` skill (template `skills/_template-workflow/`), everything else through `kiwi-author`; `kiwi new rule|skill|workflow|agent <name>` scaffolds from the template, then `kiwi install` so every agent links it; `kiwi doctor` must be clean (it checks workflow shape). |
 | "Change GLOBAL.md" | Edit it; nothing to install. Keep procedures in skills, not here. |
 | "Remember that … (cross-project)" | Add to `MEMORY.md` (state) or `NOTES.md` (`G-###` gotcha). Project facts do not belong here. |
 | "Change how projects are initialized" | Edit `skills/kiwi-system/INITIALIZER.md` / `runbooks/` / `templates/` together; bump `version` in `package.json`; describe the delta in `CHANGELOG.md` and INITIALIZER §24.14 so UPGRADE mode has a fixed list; run `node tests/run-all.js`. |

@@ -1,6 +1,6 @@
 {
   "name": "@thekiwidev/ai-system",
-  "version": "3.3.0",
+  "version": "3.5.0",
   "description": "thekiwidev's universal, agent-agnostic AI operating system: global skills, agents, rules and workflows for Claude Code, Codex, Gemini CLI, Antigravity and GitHub Copilot, plus the kiwi CLI that wires them into any project.",
   "bin": {
     "kiwi": "./bin/kiwi"

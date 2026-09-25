@@ -32,9 +32,9 @@ last_reviewed: "{{DATE}}"
 | [`ENGINEERING.md`](./ENGINEERING.md) | writing any code — the conventions that actually apply |
 | [`VERIFICATION.md`](./VERIFICATION.md) | before declaring anything done |
 | [`domains/INDEX.md`](./domains/INDEX.md) *(if applicable)* | working inside a specific domain |
-| [`NOTES.md`](./NOTES.md) | before treating anything as new — deferrals, non-fixes, gotchas |
-| [`workflows/INDEX.md`](./workflows/INDEX.md) | a reusable procedure applies (PRD creation, feature, bug fix, …) |
-| [`../../CHANGELOG.md`](../../CHANGELOG.md) | history matters to the task — never read whole for a small task |
+| [`NOTES.md`](./NOTES.md) | before treating anything as new — deferrals, non-fixes, gotchas (entries: `## N-###`, coded sub-headings, RULE-DOC-013) |
+| [`workflows/INDEX.md`](./workflows/INDEX.md) | before classifying any task — the request may match a workflow's triggers (RULE-KIND-002); also PRD creation, feature, bug fix |
+| [`../../CHANGELOG.md`](../../CHANGELOG.md) | history matters to the task — never read whole for a small task (entries: `## vX.Y.Z`, versioned sub-headings, RULE-DOC-012) |
 
 ## The system about itself
 

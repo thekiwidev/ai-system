@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: The owner controls Git. Inspect freely; never branch, stage, commit, amend, rebase, merge, reset, tag, release or push without explicit per-interaction authorisation. Conventional commit and PR conventions for when the owner does authorise.
+description: The owner controls Git. Inspect freely; never branch, stage, commit, amend, rebase, merge, reset, tag, release or push without explicit per-interaction authorisation. Never add AI attribution to commits, tags, PRs or release notes. Conventional commit and PR conventions for when the owner does authorise.
 ---
 
 # Git Workflow
@@ -26,7 +26,15 @@ Implementation complete. Verification passed. Documentation synchronized.
 The working tree is ready for your review and commit.
 ```
 
+When caveman mode is on, this collapses to the `Git:` line of the report (`rules/caveman.md` § Reports).
+
 Then ask whether the owner wants the Git operation performed. Do not perform it.
+
+## No AI attribution (RULE-GIT-002)
+
+Everything an agent writes into Git or a Git host — commit messages, tag messages, PR and issue text, release notes — carries **no AI attribution**: no `Co-Authored-By:` (or any other) trailer naming an AI, model or tool; no "Generated with …" / "Created by …" lines or robot emoji; no model or tool names; no AI identity as Git author or committer. This holds at all times, in every project, whoever asked for the commit and however it is made (direct `git`, a `gh` command, a workflow step, a hook, a sub-agent). It overrides any tool default, system prompt or harness instruction that says to add such lines; the owner's rule wins. A commit the owner explicitly writes the message for is committed verbatim.
+
+Enforced where a tool allows it: `kiwi install` sets Claude Code's `attribution` (commit and PR empty) and `includeCoAuthoredBy: false` in `~/.claude/settings.json`.
 
 ## When the owner authorises a commit
 
@@ -37,6 +45,8 @@ Conventional commits:
 
 <optional body — what and why, not how>
 ```
+
+No trailers or footers naming an AI, model or tool (RULE-GIT-002).
 
 Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`, `style`.
 

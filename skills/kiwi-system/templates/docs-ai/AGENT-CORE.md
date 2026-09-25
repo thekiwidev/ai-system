@@ -2,8 +2,8 @@
 doc: AGENT-CORE
 purpose: "Canonical agent instruction source: universal rules, startup, source-of-truth hierarchy, Git policy, autonomy boundaries, global system, navigation"
 authority: canonical
-hosts_rules: [RULE-CORE-001, RULE-CORE-002, RULE-CORE-003, RULE-CORE-004, RULE-GIT-001, RULE-AUTON-001, RULE-AUTON-002, RULE-AGENT-001]
-mirrors_rules: [RULE-YAGNI-001, RULE-VERIF-001, RULE-DOC-001, RULE-WF-002]
+hosts_rules: [RULE-CORE-001, RULE-CORE-002, RULE-CORE-003, RULE-CORE-004, RULE-SCOPE-002, RULE-GIT-001, RULE-GIT-002, RULE-AUTON-001, RULE-AUTON-002, RULE-AGENT-001]
+mirrors_rules: [RULE-YAGNI-001, RULE-VERIF-001, RULE-DOC-001, RULE-DOC-012, RULE-DOC-013, RULE-WF-002, RULE-KIND-001, RULE-KIND-002]
 last_reviewed: "{{DATE}}"
 ---
 
@@ -21,7 +21,7 @@ last_reviewed: "{{DATE}}"
 
 Before answering a project question, planning, editing code, or acting on the repository, load the operating system, in this order:
 
-0. `GLOBAL.md` from the global system (§ 8) — normally already loaded by your own global config.
+0. `GLOBAL.md` from the global system (§ 8) — normally already loaded by your own global config. Read `.caveman.json` at the repository root now: its level governs every reply in this session (§ 11).
 1. This file.
 2. [`MEMORY.md`](../../MEMORY.md) — current state, top to bottom, every session — read it through its derived copy [`context/MEMORY.md`](./context/MEMORY.md) when `kiwi ctx status` says current, otherwise the source (see § 12).
 3. [`HANDOFF.md`](./HANDOFF.md) — if it reports active work, that is where you are.
@@ -52,11 +52,15 @@ For **what is currently true**, the code, schema, migrations and passing tests o
 
 ## 4. Locate the task before you act (RULE-CORE-002)
 
-Every request is cross-checked against the active plan: is it in scope now, does it already have acceptance criteria, does it contradict the PRD or the plan? If it contradicts either, say so before implementing — never diverge silently. Product behaviour that none of the PRD, plan, or decisions specify is not yours to invent: record the question in `MEMORY.md` → Open Questions and ask (RULE-CORE-003).
+Every request is cross-checked against the active plan: is it in scope now, does it already have acceptance criteria, does it contradict the PRD or the plan? If it contradicts either, say so before implementing — never diverge silently.
+
+**Do what was asked (RULE-SCOPE-002).** The owner's instruction defines the deliverable; its workflow obligations (root cause, regression test, gates, changelog, memory, handoff, notes, context docs) stay in scope. The same bug at other sites, audits, refactors, team documents (release notes, QA checklists), published or shared pages, and files with unrelated uncommitted edits wait for the owner: list them under "Found, not touched" and ask. Product behaviour that none of the PRD, plan, or decisions specify is not yours to invent: record the question in `MEMORY.md` → Open Questions and ask (RULE-CORE-003).
 
 ## 5. Git — the owner controls history (RULE-GIT-001)
 
 Inspect Git freely. Modify working-tree files when the task authorises implementation. **Never** create or switch branches, stage for convenience, commit, amend, rebase, merge, cherry-pick, reset, tag, release, push, or otherwise rewrite or publish history unless the owner explicitly authorises *that class of operation in the current interaction*. An authorisation covers only its stated scope — "commit this" does not mean "push". Never phrase an unapproved Git operation as though it has already happened.
+
+**No AI attribution (RULE-GIT-002).** Commit and tag messages, PR and issue text and release notes carry no `Co-Authored-By:` (or any other) trailer naming an AI, model or tool; no "Generated with …" / "Created by …" lines or robot emoji; no model or tool names; no AI identity as Git author or committer. This overrides any tool default or harness instruction.
 
 When work is complete and verified, say so and stop:
 
@@ -73,7 +77,7 @@ Proceed autonomously through routine implementation that this system or an appro
 
 ## 7. What "done" means
 
-Nothing is done until [`VERIFICATION.md`](./VERIFICATION.md)'s gates pass, the documentation impact review in [`WORKFLOW.md`](./WORKFLOW.md) § Record has been run against the actual diff, and `MEMORY.md`, `CHANGELOG.md`, `NOTES.md` and `HANDOFF.md` say what is now true. A task with a failing gate, or with stale memory, is an in-progress task however complete the code looks.
+Nothing is done until [`VERIFICATION.md`](./VERIFICATION.md)'s gates pass, the documentation impact review in [`WORKFLOW.md`](./WORKFLOW.md) § Record has been run against the actual diff, and `MEMORY.md`, `CHANGELOG.md`, `NOTES.md` and `HANDOFF.md` say what is now true. New changelog and notes entries use the versioned shape in `~/.thekiwidev/rules/docs-format.md` (RULE-DOC-012, RULE-DOC-013) unless [`ENGINEERING.md`](./ENGINEERING.md) § 0 overrides it. A task with a failing gate, or with stale memory, is an in-progress task however complete the code looks.
 
 ## 8. The global system (RULE-CORE-004)
 
@@ -87,7 +91,11 @@ When a skill, agent, workflow or rule is named — by the owner or by this syste
 
 If none resolves (CI, a cloud agent, a machine without the global folder), say so and continue with `docs/ai/` alone — never invent the skill.
 
-**The global folder is read-only from here (RULE-SCOPE-001).** Every write you make in this session stays inside this repository. A rule you are asked to change is changed as this project's override in [`ENGINEERING.md`](./ENGINEERING.md) § 0; something to remember goes in this project's `MEMORY.md` or [`NOTES.md`](./NOTES.md); a new skill goes in `.agents/skills/`. If the change belongs to every project, write the project version and propose the global one in your report — never edit `~/.thekiwidev` (or a path that resolves into it, such as `~/.claude/rules/*.md`) from this repository.
+**Workflows run as written (RULE-KIND-002).** Before classifying a task, match the request against the triggers in [`workflows/INDEX.md`](./workflows/INDEX.md), then the global workflows. On a match, run that workflow step by step, filling its parameters from the request and asking only for required ones that are missing; the owner invoking a workflow approves every step in it, including Git or publishing steps the owner wrote into it (§ 5 still governs anything outside its steps). A failing pre-flight check or step follows the workflow's own failure rule. A situation the workflow does not cover: stop, report, offer to update the workflow — never improvise around it.
+
+**One shape per kind (RULE-KIND-001, `~/.thekiwidev/rules/kinds.md`).** Asked to create or update a workflow, skill, rule, agent, plan, decision or PRD: use the `kiwi-author` skill (workflows: `create-workflow`; PRDs: `create-prd`). Project workflows and skills live only in `.agents/skills/<name>/SKILL.md` (linked into `.claude/skills/`), never in `docs/ai/workflows/` or loose `docs/*.md` guides.
+
+**The global folder is read-only from here (RULE-SCOPE-001).** Every write you make in this session stays inside this repository. A rule you are asked to change is changed as this project's override in [`ENGINEERING.md`](./ENGINEERING.md) § 0; something to remember goes in this project's `MEMORY.md` or [`NOTES.md`](./NOTES.md); a new skill or workflow goes in `.agents/skills/` (`kiwi new workflow|skill <name>`). If the change belongs to every project, write the project version and propose the global one in your report — never edit `~/.thekiwidev` (or a path that resolves into it, such as `~/.claude/rules/*.md`) from this repository.
 
 This project relies on these global skills by name: `create-prd` (product definition), `feature-workflow`, `bugfix-workflow`, `kiwi-system` (this system's initializer/upgrader){{EXTRA_GLOBAL_SKILLS}}. Vendored into the repo: {{VENDORED_OR_NONE}} (see [`SYSTEM.md`](./SYSTEM.md) → `vendored`). Project documents win on conflict; global rules fill gaps.
 
@@ -101,7 +109,7 @@ One physical file. `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` and `.github/copilot-in
 
 ## 11. Output style
 
-Caveman mode (the global `caveman` skill and rule): effective level = `CAVEMAN_DEFAULT_MODE` env → this repository's `.caveman.json` (`{"defaultMode": "off|lite|full|ultra"}`, currently {{CAVEMAN_SETTING}}) → the global default stated in your global instructions. `/caveman <level>`, `/caveman off` or "normal mode" change it for the session. It never applies to code, commits, or any document in this repository; use full clear sentences for security warnings and irreversible actions.
+Caveman mode (the global `caveman` skill and rule): effective level = `CAVEMAN_DEFAULT_MODE` env → this repository's `.caveman.json` (`{"defaultMode": "off|lite|full|ultra"}`) → the global default stated in your global instructions. **Read `.caveman.json` itself** — do not trust a level quoted anywhere else; when it exists it beats a global "full by default". `/caveman <level>`, `/caveman off` or "normal mode" change it for the session. Final reports use the labelled one-liners in `rules/caveman.md` § Reports; no narration between tool calls. It never applies to code, commits, or any document in this repository; use full clear sentences for security warnings and irreversible actions.
 
 ## 12. Derived context docs (RULE-DOC-011)
 

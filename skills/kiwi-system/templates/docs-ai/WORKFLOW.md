@@ -3,7 +3,7 @@ doc: WORKFLOW
 purpose: "The task state machine: intake, classification, gates, planning, implementation, verification, documentation reconciliation, reporting, session end"
 authority: canonical
 hosts_rules: [RULE-WF-001, RULE-WF-002, RULE-DOC-001]
-mirrors_rules: [RULE-CORE-001, RULE-CORE-002, RULE-VERIF-001, RULE-GIT-001]
+mirrors_rules: [RULE-CORE-001, RULE-CORE-002, RULE-VERIF-001, RULE-GIT-001, RULE-KIND-002]
 last_reviewed: "{{DATE}}"
 ---
 
@@ -37,6 +37,8 @@ BLOCKED — missing owner decision · missing requirement · verification failur
 
 ## 2. CLASSIFY (RULE-WF-001)
 
+**First, match a workflow (RULE-KIND-002).** If the request fits the triggers of a workflow in [`workflows/INDEX.md`](./workflows/INDEX.md) (or a global workflow), run it as written and report under its own Report section; the classification is `workflow: <name> v<version>`. Otherwise classify:
+
 Feature · enhancement · bug fix · refactor · maintenance · documentation-only · investigation. State it in the plan and the report.
 
 ## 3. REQUIREMENTS DISCOVERY (RULE-CORE-002)
@@ -58,6 +60,8 @@ Problem · evidence · classification · scope · non-goals · proposed solution
 
 Within the approved scope. Reuse first. Tests with the logic. Conventions from `ENGINEERING.md`.
 
+**Task scope (RULE-SCOPE-002).** Change only what the instruction names, plus its workflow obligations. The same bug at other sites, audits, refactors, team documents, published or shared pages, and files with unrelated uncommitted edits: stop, list them, ask.
+
 ## 7. VERIFY (RULE-VERIF-001)
 
 Every gate in `VERIFICATION.md`, with the real commands, actual output reported. A failing gate = in progress.
@@ -75,13 +79,16 @@ For each layer state **UPDATED / VERIFIED-NO-CHANGE / NOT APPLICABLE / BLOCKED**
 | Change observed | Documentation action |
 | --- | --- |
 | New product capability | PRD + plan + MEMORY + CHANGELOG + domain docs; ADR only if a durable decision exists |
-| Bug fixed | CHANGELOG (symptom / cause / why checks allowed it / fix / regression / verification); MEMORY if current state changed; NOTES for a gotcha or deliberate non-fix |
+| Bug fixed | CHANGELOG `### vX.Y.Z — Fixed` (symptom / cause / why checks allowed it / fix / regression) + `### vX.Y.Z — Verification`; MEMORY if current state changed; NOTES for a gotcha or deliberate non-fix |
 | Architecture or technology changed | ADR + ARCHITECTURE + MEMORY + ENGINEERING if practice changes + CHANGELOG |
 | Convention changed | ENGINEERING + CHANGELOG |
 | Schema / API contract changed | plan + ARCHITECTURE/domain + MEMORY + CHANGELOG (+ ADR if durable) |
 | Planned work added/removed/reordered | plan + MEMORY → Current Position |
 | Concern found, not fixed | NOTES + HANDOFF; do not claim completion |
+| Out-of-scope finding (RULE-SCOPE-002) | report "Found, not touched"; NOTES entry (`open`) when it outlives the session |
 | Durable decision | ADR + current-state docs + CHANGELOG |
+
+CHANGELOG and NOTES entries use the versioned shape of RULE-DOC-012 / RULE-DOC-013 (`~/.thekiwidev/rules/docs-format.md`).
 
 ### 8.3 Memory, handoff, plan
 
@@ -98,9 +105,11 @@ If this task changed any source listed in `SYSTEM.md` → `context_docs` (`MEMOR
 ## 9. REPORT and hand back (RULE-GIT-001)
 
 ```text
-Classification · What changed · Verification (commands + results) · Documentation synchronized (per layer, derived context copies listed as their own layer)
+Classification · What changed · Found, not touched (RULE-SCOPE-002) · Verification (commands + results) · Documentation synchronized (per layer, derived context copies listed as their own layer)
 Remaining work · Owner decisions · Git: no unauthorised operation performed — ready for your review and commit.
 ```
+
+With caveman on (`.caveman.json`), the report is the labelled one-liners of `rules/caveman.md` § Reports — same facts, no paragraphs.
 
 Then ask whether the owner wants the Git operation performed.
 

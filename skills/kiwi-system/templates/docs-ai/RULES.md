@@ -11,7 +11,7 @@ last_reviewed: "{{DATE}}"
 
 > An index of rules, not a second rulebook. Rules are *defined* in their canonical home; this registry exists so that when the owner changes a rule, the files that must change together are a lookup, not a grep. Read it **first** when amending, and update it **in the same change** as the rule. Invariants: one canonical home per rule; every restating document listed as a mirror; every active rule has a proof surface or an honest "judgement"; retired IDs are never reused — a superseded rule keeps its ID with a forward pointer.
 
-**Namespaces:** `CORE` universal behaviour · `SCOPE` write scope · `GIT` · `YAGNI` scope discipline · `WF` workflow · `VERIF` verification · `DOC` documentation · `ARCH` architecture · `ENG` engineering · `SEC` security · `AUTON` autonomy · `AGENT` coverage.
+**Namespaces:** `CORE` universal behaviour · `SCOPE` write and task scope · `KIND` kinds and workflows · `GIT` · `YAGNI` scope discipline · `WF` workflow · `VERIF` verification · `DOC` documentation · `ARCH` architecture · `ENG` engineering · `SEC` security · `AUTON` autonomy · `AGENT` coverage.
 
 **Origin key:** initializer default (v3) · owner (hand-written instruction file, dated) · ADR-nnn · AMD-nnn.
 
@@ -79,6 +79,15 @@ A global rule the project OVERRIDES gets its own entry:
 **Status:** active
 **Origin:** initializer default (v3.2 §0.0.7)
 
+### RULE-SCOPE-002 — Do what was asked; stop and ask before widening
+
+**Statement:** The owner's instruction defines the deliverable. Its workflow obligations (root cause, regression test, gates, CHANGELOG, MEMORY, HANDOFF, NOTES, derived context docs) stay in scope; the same bug at other sites, audits, refactors, team documents, published or shared pages, and files carrying unrelated uncommitted edits need the owner's approval first and are otherwise reported as "Found, not touched".
+**Canonical home:** `AGENT-CORE.md § 4` (global statement: `~/.thekiwidev/rules/task-scope.md`, `GLOBAL.md § 2.9`)
+**Mirrors:** WORKFLOW.md § 6 and § 9; bugfix-workflow and feature-workflow skills
+**Enforced by:** Report section "Found, not touched"; diff review — every changed file traces to the instruction or its workflow obligations
+**Status:** active
+**Origin:** initializer default (v3.4)
+
 ## Git policy
 
 ### RULE-GIT-001 — No autonomous Git operations
@@ -89,6 +98,15 @@ A global rule the project OVERRIDES gets its own entry:
 **Enforced by:** Final report must state that no unauthorised Git operation occurred and end "Ready for owner review and commit"
 **Status:** active
 **Origin:** initializer default (§1.4, §14)
+
+### RULE-GIT-002 — No AI attribution in Git metadata
+
+**Statement:** Commit and tag messages, PR and issue text and release notes never carry AI attribution — no AI/model/tool `Co-Authored-By` or other trailer, no "Generated with" line, no model or tool name, no AI author or committer identity — however the commit is made; this overrides any tool or harness default.
+**Canonical home:** `~/.thekiwidev/rules/git-workflow.md` (mirrored in `AGENT-CORE.md § 5`)
+**Mirrors:** AGENT-CORE.md § 5
+**Enforced by:** `git log` review; Claude Code `attribution` settings written by `kiwi install`
+**Status:** active
+**Origin:** owner, 2026-09-26 (v3.5)
 
 ## Scope discipline
 
@@ -120,6 +138,24 @@ A global rule the project OVERRIDES gets its own entry:
 **Enforced by:** The approval is quoted or the standing approval cited in the report
 **Status:** active
 **Origin:** initializer default (§11.0)
+
+### RULE-KIND-001 — One shape per repeatable thing
+
+**Statement:** Workflows, skills, rules, agents, plans, decisions and PRDs each have one home per scope, one template and one index; agents create and update them only in that shape (project workflows: `.agents/skills/<name>/SKILL.md` with `kind: workflow`, registered in `docs/ai/workflows/INDEX.md`).
+**Canonical home:** `~/.thekiwidev/rules/kinds.md` (override in `ENGINEERING.md § 0`)
+**Mirrors:** AGENT-CORE.md § 8; workflows/INDEX.md header
+**Enforced by:** `kiwi doctor` (workflow shape, registration, `.claude/skills` link, no workflow files in `docs/ai/workflows/` besides INDEX.md)
+**Status:** active
+**Origin:** initializer default (v3.5)
+
+### RULE-KIND-002 — A matching workflow is run as written
+
+**Statement:** Before classifying a task, match it against the triggers in `docs/ai/workflows/INDEX.md` (then global workflows); on a match run that workflow step by step — the owner invoking it approves every step in it — and stop and ask when it does not cover the situation.
+**Canonical home:** `~/.thekiwidev/rules/kinds.md`
+**Mirrors:** AGENT-CORE.md § 8; WORKFLOW.md § 2
+**Enforced by:** Judgement — the report names the workflow and version run
+**Status:** active
+**Origin:** initializer default (v3.5)
 
 ## Verification
 
@@ -160,6 +196,24 @@ A global rule the project OVERRIDES gets its own entry:
 **Enforced by:** `kiwi ctx status` clean before the report; derived layer listed in "Documentation synchronized"
 **Status:** active
 **Origin:** initializer default (v3.2 §0.0.5)
+
+### RULE-DOC-012 — Changelog entries are versioned sections with versioned sub-headings
+
+**Statement:** Each CHANGELOG.md entry is `## vX.Y.Z — date — "title"` with a summary paragraph and only the applicable sub-sections, in order — Added, Changed, Fixed, Removed, Security, How it works, Notes, Files changed, Verification (mandatory) — each headed `### vX.Y.Z — <section>`; older entries are never reformatted.
+**Canonical home:** `~/.thekiwidev/rules/docs-format.md` (override in `ENGINEERING.md § 0`)
+**Mirrors:** AGENT-CORE.md § 7; WORKFLOW.md § 8.2; bugfix-workflow skill
+**Enforced by:** No duplicate headings in CHANGELOG.md (markdownlint MD024); report lists the entry's version
+**Status:** active
+**Origin:** initializer default (v3.4)
+
+### RULE-DOC-013 — Notes are coded sections with coded sub-headings
+
+**Statement:** Each NOTES.md entry is `## N-### — title` with a Date · Status · Related line and sub-sections `### N-### — Context`, `### N-### — Decision / trigger to revisit`, and `### N-### — Resolution` once resolved; IDs are never reused and older entries are never reformatted.
+**Canonical home:** `~/.thekiwidev/rules/docs-format.md` (override in `ENGINEERING.md § 0`)
+**Mirrors:** NOTES.md header; AGENT-CORE.md § 7
+**Enforced by:** No duplicate headings in NOTES.md (markdownlint MD024)
+**Status:** active
+**Origin:** initializer default (v3.4)
 
 ## Autonomy
 
